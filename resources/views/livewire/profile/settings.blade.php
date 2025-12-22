@@ -33,39 +33,77 @@
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">معلومات الملف الشخصي</h3>
         
         <form wire:submit.prevent="updateProfile" class="space-y-6">
-            {{-- Avatar Upload --}}
+            {{-- Avatar Upload with Drag & Drop --}}
             <div class="flex flex-col sm:flex-row items-center gap-6">
-                <div class="relative">
-                    @if($avatarPreview)
-                        <img src="{{ $avatarPreview }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover">
-                    @else
-                        <div class="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-                            <x-heroicon-o-user class="w-12 h-12 text-primary" />
+                <div class="relative group"
+                     x-data="{ isDragging: false }"
+                     x-on:dragover.prevent="isDragging = true"
+                     x-on:dragleave.prevent="isDragging = false"
+                     x-on:drop.prevent="isDragging = false; $refs.avatarInput.files = $event.dataTransfer.files; $refs.avatarInput.dispatchEvent(new Event('change'))">
+                    
+                    {{-- Avatar Preview --}}
+                    <label for="avatar-upload" class="cursor-pointer block">
+                        <div class="relative w-28 h-28 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600 transition-all duration-300"
+                             :class="{ 'border-primary border-dashed': isDragging }">
+                            @if($avatarPreview)
+                                <img src="{{ $avatarPreview }}" alt="Avatar" class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                                    <x-heroicon-o-user class="w-14 h-14 text-primary/60" />
+                                </div>
+                            @endif
+                            
+                            {{-- Hover Overlay --}}
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <div class="text-center text-white">
+                                    <x-heroicon-o-camera class="w-6 h-6 mx-auto mb-1" />
+                                    <span class="text-xs">تغيير</span>
+                                </div>
+                            </div>
                         </div>
+                    </label>
+                    
+                    {{-- Remove Button --}}
+                    @if($avatarPreview)
+                        <button type="button" 
+                                wire:click="removeAvatar" 
+                                class="absolute -bottom-1 -right-1 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                            <x-heroicon-o-x-mark class="w-4 h-4" />
+                        </button>
                     @endif
+                    
+                    <input type="file" 
+                           id="avatar-upload" 
+                           x-ref="avatarInput"
+                           wire:model="avatar" 
+                           accept="image/*" 
+                           class="hidden">
                 </div>
-                <div class="flex-1">
+                
+                <div class="flex-1 text-center sm:text-right">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         صورة الملف الشخصي
                     </label>
-                    <div class="flex items-center gap-3">
-                        <label for="avatar-upload" class="cursor-pointer">
-                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                                <x-heroicon-o-photo class="w-5 h-5" />
-                                <span>اختر صورة</span>
-                            </span>
-                            <input type="file" id="avatar-upload" wire:model="avatar" accept="image/*" class="hidden">
-                        </label>
-                        @if($avatarPreview)
-                            <button type="button" wire:click="removeAvatar" class="text-red-600 hover:text-red-800 dark:text-red-400">
-                                <x-heroicon-o-trash class="w-5 h-5" />
-                            </button>
-                        @endif
-                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        اسحب وأفلت الصورة أو انقر للاختيار
+                    </p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">
+                        PNG, JPG, GIF — الحجم الأقصى: 2 ميجابايت
+                    </p>
                     @error('avatar')
-                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                        <p class="mt-2 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">الحجم الأقصى: 2 ميجابايت</p>
+                    
+                    {{-- Loading indicator --}}
+                    <div wire:loading wire:target="avatar" class="mt-2">
+                        <span class="text-xs text-primary flex items-center gap-1 justify-center sm:justify-start">
+                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            جاري الرفع...
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -146,21 +184,36 @@
                     </p>
                 </div>
 
-                {{-- رقم الجوال --}}
+                {{-- رقم الجوال (Saudi Format) --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         رقم الجوال
                     </label>
-                    <input 
-                        type="tel" 
-                        wire:model.blur="phone"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('phone') border-red-500 @enderror"
-                        placeholder="05xxxxxxxx"
-                        dir="ltr"
-                    >
+                    <div class="relative">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <span class="text-lg">🇸🇦</span>
+                            <span class="text-gray-400 text-sm mr-1">+966</span>
+                        </div>
+                        <input 
+                            type="tel" 
+                            wire:model.blur="phone"
+                            x-data
+                            x-on:input="
+                                let v = $el.value.replace(/\D/g, '').substring(0, 9);
+                                if (v.length > 2) v = v.substring(0,2) + '-' + v.substring(2);
+                                if (v.length > 6) v = v.substring(0,6) + '-' + v.substring(6);
+                                $el.value = v;
+                            "
+                            class="w-full pr-24 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('phone') border-red-500 @enderror"
+                            placeholder="5X-XXX-XXXX"
+                            dir="ltr"
+                            maxlength="12"
+                        >
+                    </div>
                     @error('phone')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">مثال: 50-123-4567</p>
                 </div>
             </div>
 
@@ -195,58 +248,82 @@
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">تغيير كلمة المرور</h3>
         
         <form wire:submit.prevent="updatePassword" class="space-y-6">
-            {{-- Current Password --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    كلمة المرور الحالية <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="password" 
-                    wire:model="currentPassword"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('currentPassword') border-red-500 @enderror"
-                    placeholder="أدخل كلمة المرور الحالية"
-                >
-                @error('currentPassword')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-            </div>
+            {{-- Password Fields - 3 Columns --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- Current Password --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الحالية <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            wire:model="currentPassword"
+                            class="w-full pr-10 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('currentPassword') border-red-500 @enderror"
+                            placeholder="كلمة المرور الحالية"
+                        >
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <x-heroicon-o-lock-closed class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </div>
+                    @error('currentPassword')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            {{-- New Password --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    كلمة المرور الجديدة <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="password" 
-                    wire:model="newPassword"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('newPassword') border-red-500 @enderror"
-                    placeholder="أدخل كلمة المرور الجديدة (8 أحرف على الأقل)"
-                >
-                @error('newPassword')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
-            </div>
+                {{-- New Password --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الجديدة <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            wire:model="newPassword"
+                            class="w-full pr-10 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('newPassword') border-red-500 @enderror"
+                            placeholder="8 أحرف على الأقل"
+                        >
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <x-heroicon-o-key class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </div>
+                    @error('newPassword')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            {{-- Confirm Password --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    تأكيد كلمة المرور <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="password" 
-                    wire:model="new_password_confirmation"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('newPassword') border-red-500 @enderror"
-                    placeholder="أعد إدخال كلمة المرور الجديدة"
-                >
-                @error('newPassword')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
+                {{-- Confirm Password --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        التأكيد <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            wire:model="new_password_confirmation"
+                            class="w-full pr-10 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary"
+                            placeholder="أعد إدخال الجديدة"
+                        >
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <x-heroicon-o-check-circle class="w-4 h-4 text-gray-400" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {{-- Save Button --}}
             <div class="flex justify-end">
-                <button type="submit" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-                    <x-heroicon-o-key class="w-5 h-5" />
+                <button type="submit" 
+                        wire:loading.attr="disabled"
+                        wire:loading.class="opacity-50 cursor-wait"
+                        class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                    <span wire:loading.remove wire:target="updatePassword">
+                        <x-heroicon-o-key class="w-5 h-5" />
+                    </span>
+                    <svg wire:loading wire:target="updatePassword" class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
                     <span>تغيير كلمة المرور</span>
                 </button>
             </div>
