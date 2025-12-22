@@ -29,15 +29,20 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <button wire:click="download"
-                            class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                            title="تنزيل">
-                        <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
-                    </button>
-                    <button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                            title="عرض">
-                        <x-heroicon-o-eye class="w-5 h-5" />
-                    </button>
+                    <button wire:click="openPdfModal" class="btn btn-info"> 👁️ عرض PDF </button>
+                    <div x-data="{ showPdf: false }"
+                         x-show="showPdf"
+                         x-transition
+                         class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                         style="display: none;">
+                        <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">عرض PDF</h3>
+                                <button @click="showPdf = false" class="text-gray-500 hover:text-gray-700">✕</button>
+                            </div>
+                            <iframe src="#" id="pdf-frame" class="w-full h-96 border"></iframe>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,6 +122,11 @@
             @endif
         </div>
 
+        {{-- Document Tasks --}}
+        <livewire:documents.document-tasks
+            :document-id="$this->document->id"
+            wire:key="documents-document-tasks-{{ $this->document->id }}" />
+
         {{-- Activity Log --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -180,16 +190,22 @@
             <div class="space-y-3">
                 {{-- Approve --}}
                 <button wire:click="approve"
-                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-approve text-white rounded-lg hover:bg-approve-hover transition-colors">
+                        wire:loading.attr="disabled"
+                        wire:target="approve"
+                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-approve text-white rounded-lg hover:bg-approve-hover transition-colors disabled:opacity-50">
                     <x-heroicon-o-check class="w-5 h-5" />
-                    <span>موافقة</span>
+                    <span wire:loading.remove wire:target="approve">✅ موافقة</span>
+                    <span wire:loading wire:target="approve">⏳ جاري...</span>
                 </button>
 
                 {{-- Reject --}}
                 <button wire:click="reject"
-                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-reject text-white rounded-lg hover:bg-reject-hover transition-colors">
+                        wire:loading.attr="disabled"
+                        wire:target="reject"
+                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-reject text-white rounded-lg hover:bg-reject-hover transition-colors disabled:opacity-50">
                     <x-heroicon-o-x-mark class="w-5 h-5" />
-                    <span>رفض</span>
+                    <span wire:loading.remove wire:target="reject">❌ رفض</span>
+                    <span wire:loading wire:target="reject">⏳ جاري...</span>
                 </button>
 
                 {{-- Forward --}}

@@ -29,3 +29,4 @@ $colorClasses = match($color) {
         </div>
     </div>
 </div>
+

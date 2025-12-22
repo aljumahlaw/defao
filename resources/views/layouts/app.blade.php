@@ -59,7 +59,7 @@
         </div>
         
         {{-- Toast Notifications --}}
-        <x-toast />
+        <x-toast-notification />
         
         {{-- Dark Mode & Language Initialization --}}
         <script>
@@ -81,5 +81,7 @@
                 document.body.classList.toggle('ltr', savedLanguage === 'en');
             })();
         </script>
+        
+        @stack('scripts')
     </body>
 </html>

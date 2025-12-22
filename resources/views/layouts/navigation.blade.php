@@ -22,8 +22,14 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
+                        @php $roleDisplay = Auth::user()->getRoleDisplay(); @endphp
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                             <div>{{ Auth::user()->name }}</div>
+                            
+                            {{-- Role Badge --}}
+                            <span class="mx-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ $roleDisplay['classes'] }}">
+                                {{ $roleDisplay['label'] }}
+                            </span>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -78,7 +84,13 @@
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
+                <div class="flex items-center gap-2">
+                    <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
+                    @php $roleDisplayMobile = Auth::user()->getRoleDisplay(); @endphp
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border {{ $roleDisplayMobile['classes'] }}">
+                        {{ $roleDisplayMobile['label'] }}
+                    </span>
+                </div>
                 <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 

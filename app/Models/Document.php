@@ -12,6 +12,7 @@ class Document extends Model
 
     protected $fillable = [
         'title',
+        'case_number',
         'type',
         'description',
         'file_name',
@@ -47,6 +48,11 @@ class Document extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function documentTasks()
+    {
+        return $this->hasMany(DocumentTask::class);
+    }
+
     public function activities()
     {
         return $this->hasMany(DocumentActivity::class)->orderBy('created_at', 'desc');
@@ -71,5 +77,29 @@ class Document extends Model
             'finalapproval' => 'موافقة نهائية',
             default => 'غير محدد',
         };
+    }
+
+    // Methods
+    public function unarchive()
+    {
+        $this->update(['is_archived' => false]);
+    }
+
+    // Scopes
+    public function scopeVisibleTo($query, User $user)
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+        
+        if ($user->isLawyer()) {
+            return $query->where(function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('assignee_id', $user->id);
+            });
+        }
+        
+        // ✅ المساعد فقط - return واضح
+        return $query->where('assignee_id', $user->id);
     }
 }

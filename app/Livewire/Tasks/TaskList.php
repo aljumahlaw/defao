@@ -3,6 +3,7 @@
 namespace App\Livewire\Tasks;
 
 use App\Models\Task;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
@@ -15,6 +16,9 @@ class TaskList extends Component
     public $search = '';
     public $dateFrom = '';
     public $dateTo = '';
+    
+    public ?int $selectedTaskId = null;
+    public bool $showTaskModal = false;
 
     protected $listeners = [
         'global-search-updated' => 'handleGlobalSearch',
@@ -29,7 +33,13 @@ class TaskList extends Component
         return Task::query()
             ->with('document', 'creator', 'assignee')
             ->when($this->statusFilter !== 'all', fn($q) => $q->where('status', $this->statusFilter))
-            ->when($this->search, fn($q) => $q->where('title', 'like', '%' . $this->search . '%'))
+            ->when($this->search, function ($q) {
+                $term = '%' . $this->search . '%';
+                $q->where(function ($sub) use ($term) {
+                    $sub->where('title', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            })
             ->when($this->dateFrom, fn($q) => $q->whereDate('due_date', '>=', $this->dateFrom))
             ->when($this->dateTo, fn($q) => $q->whereDate('due_date', '<=', $this->dateTo))
             ->latest()
@@ -57,15 +67,20 @@ class TaskList extends Component
     #[Computed]
     public function statusCounts()
     {
-        return [
-            'all' => Task::count(),
-            'pending' => Task::where('status', 'pending')->count(),
-            'in_progress' => Task::where('status', 'in_progress')->count(),
-            'completed' => Task::where('status', 'completed')->count(),
-            'overdue' => Task::where('status', '!=', 'completed')
-                ->where('due_date', '<', now())
-                ->count(),
-        ];
+        return Cache::remember('task_stats_' . auth()->id(), 300, function () {
+            $pending = Task::where('status', 'pending')->count();
+            $inProgress = Task::where('status', 'in_progress')->count();
+            $completed = Task::where('status', 'completed')->count();
+            $overdue = Task::where('status', 'overdue')->count();
+            
+            return [
+                'all' => $pending + $inProgress + $completed + $overdue,
+                'pending' => $pending,
+                'in_progress' => $inProgress,
+                'completed' => $completed,
+                'overdue' => $overdue,
+            ];
+        });
     }
 
     public function setStatusFilter($status)
@@ -118,13 +133,25 @@ class TaskList extends Component
         };
     }
 
-    public function viewTask($taskId)
+    public function viewTask(int $taskId)
     {
-        // TODO: Phase 6 - Navigate to task detail page
-        $this->dispatch('show-toast', 
-            message: "عرض المهمة #{$taskId} (Phase 3: لا يوجد صفحة تفاصيل)",
-            type: 'info'
-        );
+        $this->selectedTaskId = (int) $taskId;
+        $this->showTaskModal = true;
+    }
+    
+    public function closeTaskModal()
+    {
+        $this->showTaskModal = false;
+        $this->selectedTaskId = null;
+    }
+    
+    #[Computed]
+    public function getSelectedTaskProperty()
+    {
+        return $this->selectedTaskId
+            ? Task::with(['document:id,title', 'assignee:id,name', 'creator:id,name'])
+                ->find($this->selectedTaskId)
+            : null;
     }
 
     public function editTask($taskId)

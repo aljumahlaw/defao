@@ -42,6 +42,11 @@ class TaskForm extends Component
 
     protected $listeners = ['open-task-form-modal' => 'open'];
 
+    public function openTaskForm()
+    {
+        $this->open();
+    }
+
     public function mount($taskId = null)
     {
         $this->taskId = $taskId;

@@ -96,6 +96,17 @@
                         </span>
                     </button>
                 </div>
+
+                {{-- Search --}}
+                <div class="w-full sm:w-64">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        البحث
+                    </label>
+                    <input type="text"
+                           wire:model.live.debounce.300ms="search"
+                           placeholder="ابحث عن مهمة..."
+                           class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                </div>
             </div>
         </div>
 
@@ -228,4 +239,83 @@
             {{ $this->tasks->links() }}
         </div>
     </div>
+
+    {{-- Task Details Modal --}}
+    @if($showTaskModal && $this->selectedTask)
+        <div class="fixed inset-0 lg:mr-64 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-xl w-[min(92vw,28rem)] mx-auto p-4 max-h-[80vh] overflow-y-auto shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">تفاصيل المهمة</h3>
+                    <button wire:click="closeTaskModal" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+                
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">العنوان:</span>
+                        <div class="mt-1 font-semibold text-gray-900 dark:text-white">{{ $this->selectedTask->title }}</div>
+                    </div>
+                    
+                    @if($this->selectedTask->description)
+                    <div>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">الوصف:</span>
+                        <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white">{{ $this->selectedTask->description }}</div>
+                    </div>
+                    @endif
+                    
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">الحالة:</span>
+                            <span class="inline-flex items-center px-2 py-1 mt-1 {{ $this->getStatusBadgeColor($this->selectedTask->status) }} rounded-full text-xs">
+                                {{ $this->getStatusLabel($this->selectedTask->status) }}
+                            </span>
+                        </div>
+                        
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">الأولوية:</span>
+                            <span class="inline-flex items-center px-2 py-1 mt-1 {{ $this->getPriorityBadgeColor($this->selectedTask->priority) }} rounded-full text-xs">
+                                {{ $this->getPriorityLabel($this->selectedTask->priority) }}
+                            </span>
+                        </div>
+                        
+                        @if($this->selectedTask->assignee)
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">مسند إلى:</span>
+                            <span class="text-gray-900 dark:text-white">{{ $this->selectedTask->assignee->name }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($this->selectedTask->due_date)
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">تاريخ الاستحقاق:</span>
+                            <span class="text-gray-900 dark:text-white">{{ $this->selectedTask->due_date->format('Y-m-d') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($this->selectedTask->document)
+                        <div class="col-span-2">
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">الوثيقة المرتبطة:</span>
+                            <a href="{{ route('documents.show', $this->selectedTask->document->id) }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                {{ $this->selectedTask->document->title }}
+                            </a>
+                        </div>
+                        @endif
+                        
+                        @if($this->selectedTask->creator)
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">المنشئ:</span>
+                            <span class="text-gray-900 dark:text-white">{{ $this->selectedTask->creator->name }}</span>
+                        </div>
+                        @endif
+                        
+                        <div>
+                            <span class="font-medium text-gray-700 dark:text-gray-300 block">تاريخ الإنشاء:</span>
+                            <span class="text-gray-900 dark:text-white">{{ $this->selectedTask->created_at->format('Y-m-d H:i') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

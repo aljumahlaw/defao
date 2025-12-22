@@ -1,0 +1,31 @@
+من الحالة,الإجراء,إلى الحالة,المكون,الطريقة,الشرط الحالي,الشرط المطلوب,الأحداث,المشكلة
+[*],DocumentUpload::save,Draft,DocumentUpload,Document::create,auth()->id(),auth()->id(),DocumentActivity::create('created'),-
+Draft,forward(),Review1,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('forwarded'),-
+Draft,advanceStage(),Review1,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+Draft,approve(),FinalApproval,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('approved'),-
+Draft,bulkAction('stage_review1'),Review1,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+Review1,forward(),Proofread,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('forwarded'),-
+Review1,advanceStage(),Proofread,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+Review1,approve(),FinalApproval,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('approved'),-
+Review1,reject(),Draft,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('rejected'),-
+Review1,rejectStage(),Draft,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+Review1,bulkAction('stage_draft'),Draft,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+Review1,bulkAction('stage_proofread'),Proofread,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+Review1,bulkAction('stage_finalapproval'),FinalApproval,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+Proofread,forward(),FinalApproval,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('forwarded'),-
+Proofread,advanceStage(),FinalApproval,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+Proofread,approve(),FinalApproval,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('approved'),-
+Proofread,reject(),Draft,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('rejected'),-
+Proofread,rejectStage(),Draft,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+Proofread,bulkAction('stage_draft'),Draft,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+FinalApproval,reject(),Draft,DocumentDetail,DocumentPolicy@update,✅ المكلّف فقط,✅ المكلّف فقط,DocumentActivity::create('rejected'),-
+FinalApproval,rejectStage(),Draft,WorkflowStageCard,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,dispatch('document-stage-changed'),❌ لا Policy
+FinalApproval,bulkAction('stage_draft'),Draft,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@update,show-toast,❌ لا Policy
+أي مرحلة نشطة,archiveDocument(),Archived,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@archive,show-toast,❌ لا Policy
+أي مرحلة نشطة,bulkAction('archive'),Archived,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@archive,show-toast,❌ لا Policy
+Archived,unarchive(),نفس المرحلة,DocumentArchive,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@unarchive,show-toast,❌ لا Policy
+أي مرحلة نشطة,bulkAction('delete'),Deleted,DocumentTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@delete,show-toast,❌ لا Policy
+Deleted,restoreDocument(),نفس المرحلة,ArchiveTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@restore,show-toast,❌ لا Policy
+Archived,forceDelete(),[*],DocumentArchive,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@forceDelete,show-toast,❌ لا Policy
+Deleted,forceDeleteDocument(),[*],ArchiveTable,visibleTo,⚠️ visibleTo فقط,❌ يجب DocumentPolicy@forceDelete,show-toast,❌ لا Policy
+

@@ -4,22 +4,34 @@ namespace App\Livewire\Documents;
 
 use App\Models\Document;
 use App\Models\DocumentActivity;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 
 class DocumentDetail extends Component
 {
+    use AuthorizesRequests;
     public $documentId;
 
     public function mount($documentId)
     {
         $this->documentId = $documentId;
+
+        // ✅ إضافة فحص الصلاحيات
+        $canView = Document::visibleTo(auth()->user())
+            ->where('id', $this->documentId)
+            ->exists();
+
+        if (!$canView) {
+            abort(403, 'لا تملك صلاحية عرض هذه الوثيقة');
+        }
     }
 
     #[Computed]
     public function document()
     {
-        return Document::with('creator', 'assignee')
+        return Document::with(['creator:id,name', 'assignee:id,name'])
+            ->visibleTo(auth()->user()) // ✅ Scope protection
             ->findOrFail($this->documentId);
     }
 
@@ -115,6 +127,10 @@ class DocumentDetail extends Component
     public function approve()
     {
         $document = Document::findOrFail($this->documentId);
+
+        // تفويض (Authorization) باستخدام DocumentPolicy@update
+        $this->authorize('update', $document);
+
         $document->update(['current_stage' => 'finalapproval']);
         
         // Create activity
@@ -133,6 +149,10 @@ class DocumentDetail extends Component
     public function reject()
     {
         $document = Document::findOrFail($this->documentId);
+
+        // تفويض (Authorization) باستخدام DocumentPolicy@update
+        $this->authorize('update', $document);
+
         $document->update(['current_stage' => 'draft']);
         
         // Create activity
@@ -151,6 +171,10 @@ class DocumentDetail extends Component
     public function forward()
     {
         $document = Document::findOrFail($this->documentId);
+
+        // تفويض (Authorization) باستخدام DocumentPolicy@update
+        $this->authorize('update', $document);
+
         $stages = ['draft', 'review1', 'proofread', 'finalapproval'];
         $currentIndex = array_search($document->current_stage, $stages);
         
@@ -186,6 +210,16 @@ class DocumentDetail extends Component
         $this->dispatch('show-toast', 
             message: 'قريباً: تنزيل الملف (Phase 3: لا يوجد S3)',
             type: 'info'
+        );
+    }
+
+    public function openPdfModal()
+    {
+        $document = Document::findOrFail($this->documentId);
+
+        $this->dispatch('open-pdf-modal', 
+            documentId: $this->documentId,
+            filePath: $document->s3path ?? $document->filename
         );
     }
 

@@ -1,4 +1,33 @@
 <div class="space-y-6">
+    {{-- Role & Status Section --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">الدور والحالة</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- Role Badge --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الدور</label>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ auth()->user()->getRoleDisplay()['classes'] }}">
+                    {{ auth()->user()->getRoleDisplay()['label'] }}
+                </span>
+            </div>
+
+            {{-- Admin Status Toggle --}}
+            @if(auth()->user()->isAdmin())
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">حالة الحساب</label>
+                <label class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                    <input type="checkbox" wire:model.live="isActive" 
+                           class="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ $isActive ? 'الحساب نشط ✓' : 'الحساب معطّل ✗' }}
+                    </span>
+                </label>
+            </div>
+            @endif
+        </div>
+    </div>
+
     {{-- Profile Section --}}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">معلومات الملف الشخصي</h3>
@@ -126,11 +155,11 @@
                 </label>
                 <input 
                     type="password" 
-                    wire:model="confirmPassword"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('confirmPassword') border-red-500 @enderror"
+                    wire:model="new_password_confirmation"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('newPassword') border-red-500 @enderror"
                     placeholder="أعد إدخال كلمة المرور الجديدة"
                 >
-                @error('confirmPassword')
+                @error('newPassword')
                     <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
             </div>

@@ -1,0 +1,44 @@
+الدور,الوحدة,الإجراء,الحالة,الشرط,ملاحظات
+منشئ الوثيقة (user_id),Documents,إنشاء,✅ مسموح,auth()->id(),DocumentUpload@save - لا يوجد Policy
+منشئ الوثيقة (user_id),Documents,عرض,✅ مسموح,user_id === document.user_id,DocumentPolicy@view
+منشئ الوثيقة (user_id),Documents,تحديث,❌ غير مسموح,فقط assignee_id,DocumentPolicy@update
+منشئ الوثيقة (user_id),Documents,حذف,⚠️ غير آمن,visibleTo scope فقط,DocumentTable@bulkAction - لا يوجد Policy
+منشئ الوثيقة (user_id),Documents,أرشفة,⚠️ غير آمن,visibleTo scope فقط,DocumentTable@archiveDocument - لا يوجد Policy
+منشئ الوثيقة (user_id),Documents,استعادة,⚠️ غير آمن,visibleTo scope فقط,ArchiveTable@restoreDocument - لا يوجد Policy
+منشئ الوثيقة (user_id),Documents,حذف نهائي,⚠️ غير آمن,visibleTo scope فقط,ArchiveTable@forceDeleteDocument - لا يوجد Policy
+منشئ الوثيقة (user_id),Documents,تغيير المرحلة,❌ غير مسموح,فقط assignee_id,DocumentDetail@forward - DocumentPolicy@update
+منشئ الوثيقة (user_id),Documents,موافقة/رفض,❌ غير مسموح,فقط assignee_id,DocumentDetail@approve/reject - DocumentPolicy@update
+مكلّف الوثيقة (assignee_id),Documents,إنشاء,❌ غير مسموح,فقط auth()->id(),DocumentUpload@save
+مكلّف الوثيقة (assignee_id),Documents,عرض,✅ مسموح,assignee_id === document.assignee_id,DocumentPolicy@view
+مكلّف الوثيقة (assignee_id),Documents,تحديث,✅ مسموح,assignee_id === document.assignee_id,DocumentPolicy@update
+مكلّف الوثيقة (assignee_id),Documents,حذف,⚠️ غير آمن,visibleTo scope فقط,DocumentTable@bulkAction - لا يوجد Policy
+مكلّف الوثيقة (assignee_id),Documents,أرشفة,⚠️ غير آمن,visibleTo scope فقط,DocumentTable@archiveDocument - لا يوجد Policy
+مكلّف الوثيقة (assignee_id),Documents,استعادة,⚠️ غير آمن,visibleTo scope فقط,ArchiveTable@restoreDocument - لا يوجد Policy
+مكلّف الوثيقة (assignee_id),Documents,حذف نهائي,⚠️ غير آمن,visibleTo scope فقط,ArchiveTable@forceDeleteDocument - لا يوجد Policy
+مكلّف الوثيقة (assignee_id),Documents,تغيير المرحلة,✅ مسموح,assignee_id === document.assignee_id,DocumentDetail@forward - DocumentPolicy@update
+مكلّف الوثيقة (assignee_id),Documents,موافقة/رفض,✅ مسموح,assignee_id === document.assignee_id,DocumentDetail@approve/reject - DocumentPolicy@update
+مستخدم آخر,Documents,إنشاء,✅ مسموح,auth()->id(),DocumentUpload@save - لا يوجد Policy
+مستخدم آخر,Documents,عرض,❌ غير مسموح,لا user_id ولا assignee_id,DocumentPolicy@view
+مستخدم آخر,Documents,تحديث,❌ غير مسموح,لا user_id ولا assignee_id,DocumentPolicy@update
+مستخدم آخر,Documents,حذف,❌ غير مسموح,لا يرى الوثيقة,visibleTo scope
+مستخدم آخر,Documents,أرشفة,❌ غير مسموح,لا يرى الوثيقة,visibleTo scope
+مستخدم آخر,Documents,استعادة,❌ غير مسموح,لا يرى الوثيقة,visibleTo scope
+مستخدم آخر,Documents,حذف نهائي,❌ غير مسموح,لا يرى الوثيقة,visibleTo scope
+مستخدم آخر,Documents,تغيير المرحلة,❌ غير مسموح,لا user_id ولا assignee_id,DocumentPolicy@update
+مستخدم آخر,Documents,موافقة/رفض,❌ غير مسموح,لا user_id ولا assignee_id,DocumentPolicy@update
+منشئ المهمة (user_id),Tasks,إنشاء,✅ مسموح,auth()->id(),TaskForm@save - لا يوجد Policy
+منشئ المهمة (user_id),Tasks,عرض,⚠️ غير آمن,لا يوجد Policy,لا يوجد TaskPolicy
+منشئ المهمة (user_id),Tasks,تحديث,⚠️ غير آمن,لا يوجد Policy,TaskForm@save - لا يوجد Policy
+منشئ المهمة (user_id),Tasks,حذف,⚠️ غير آمن,لا يوجد Policy,TaskList@deleteTask - لا يوجد Policy
+منشئ المهمة (user_id),Tasks,إسناد لأي مستخدم,✅ مسموح,لا يوجد قيود,TaskForm@save
+مكلّف المهمة (assignee_id),Tasks,إنشاء,✅ مسموح,auth()->id(),TaskForm@save - لا يوجد Policy
+مكلّف المهمة (assignee_id),Tasks,عرض,⚠️ غير آمن,لا يوجد Policy,لا يوجد TaskPolicy
+مكلّف المهمة (assignee_id),Tasks,تحديث,⚠️ غير آمن,لا يوجد Policy,TaskForm@save - لا يوجد Policy
+مكلّف المهمة (assignee_id),Tasks,حذف,⚠️ غير آمن,لا يوجد Policy,TaskList@deleteTask - لا يوجد Policy
+مكلّف المهمة (assignee_id),Tasks,إسناد لأي مستخدم,✅ مسموح,لا يوجد قيود,TaskForm@save
+مستخدم آخر,Tasks,إنشاء,✅ مسموح,auth()->id(),TaskForm@save - لا يوجد Policy
+مستخدم آخر,Tasks,عرض,⚠️ غير آمن,لا يوجد Policy,لا يوجد TaskPolicy
+مستخدم آخر,Tasks,تحديث,⚠️ غير آمن,لا يوجد Policy,TaskForm@save - لا يوجد Policy
+مستخدم آخر,Tasks,حذف,⚠️ غير آمن,لا يوجد Policy,TaskList@deleteTask - لا يوجد Policy
+مستخدم آخر,Tasks,إسناد لأي مستخدم,✅ مسموح,لا يوجد قيود,TaskForm@save
+

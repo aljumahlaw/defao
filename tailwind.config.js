@@ -14,29 +14,26 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Cairo', ...defaultTheme.fontFamily.sans],
+                cairo: ['Cairo', 'sans-serif'],
             },
             colors: {
                 primary: {
-                    DEFAULT: '#4C7FF1',
-                    50: '#E8F1FC',
-                    100: '#D1E3F9',
-                    200: '#A3C7F3',
-                    300: '#75ACED',
-                    400: '#4C7FF1',
-                    500: '#2563EB',
-                    600: '#1E4FBC',
-                    700: '#163B8D',
-                    800: '#0F285E',
-                    900: '#07142F',
+                    50: '#f8fcfb',
+                    100: '#e6f7f5',
+                    200: '#cbeeec',
+                    300: '#a8e4e1',
+                    400: '#7fdad5',
+                    500: '#58BEBA',
+                    600: '#3fa8a6',
+                    700: '#329492',
+                    800: '#257f7d',
+                    900: '#1d6a68',
+                    950: '#0e3837',
+                    DEFAULT: '#58BEBA',
                 },
-                // Custom action colors
-                approve: '#93CFB5',
-                'approve-hover': '#7DB89D',
-                reject: '#E96B6B',
-                'reject-hover': '#D95555',
-                forward: '#6B95F1',
-                'forward-hover': '#5580E0',
+                success: '#059669',
+                danger: '#dc2626',
+                warning: '#d97706',
             },
         },
     },
@@ -45,3 +42,4 @@ export default {
         forms,
     ],
 }
+

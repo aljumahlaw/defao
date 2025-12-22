@@ -19,3 +19,4 @@ $colorClasses = match($color) {
     @endif
     <span class="font-medium">{{ $title }}</span>
 </button>
+

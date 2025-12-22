@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
@@ -27,6 +29,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/documents/{id}', function ($id) {
         return view('documents.show', ['documentId' => $id]);
     })->name('documents.show');
+    
+    Route::get('/documents/archive', function () {
+        return view('documents.archive');
+    })->name('documents.archive');
+    
+    Route::get('/workflow', function () {
+        return view('workflow.index');
+    })->name('workflow.index');
+    
+    Route::get('/archive', function () {
+        return view('archive.index');
+    })->name('archive.index');
+    
+    Route::view('/reports', 'reports.index')->name('reports.index');
 });
 
 Route::middleware('auth')->group(function () {
@@ -35,10 +51,33 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/profile/settings', function () {
         return view('profile');
     })->name('profile.settings');
 });
+
+Route::middleware(['auth', 'throttle:10,1'])->get('/download-pdf/{key}', function (string $key) {
+    $data = Cache::get($key);
+
+    if (!$data || !isset($data['html'])) {
+        abort(404, 'PDF expired');
+    }
+
+    // ✅ Extract filename from cache
+    $filename = $data['filename'];
+
+    // ✅ Auto-cleanup
+    Cache::forget($key);
+
+    $pdf = Pdf::loadHTML($data['html'])
+        ->setPaper('a4', 'landscape')
+        ->setOptions([
+            'defaultFont' => 'Cairo',
+            'isHtml5ParserEnabled' => true
+        ]);
+
+    return $pdf->download($filename);  // ✅ Synced filename
+})->name('documents.download-pdf');
 
 require __DIR__.'/auth.php';

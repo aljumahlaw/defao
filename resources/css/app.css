@@ -1,3 +1,18 @@
+@import '@fontsource/cairo/300.css';
+@import '@fontsource/cairo/400.css';
+@import '@fontsource/cairo/600.css';
+@import '@fontsource/cairo/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Alpine.js x-cloak - hide elements until Alpine initializes */
+[x-cloak] {
+    display: none !important;
+}
+
+/* تطبيق الخط مع Fallback */
+html, body {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+}

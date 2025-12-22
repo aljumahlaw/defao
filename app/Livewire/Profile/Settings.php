@@ -22,7 +22,7 @@ class Settings extends Component
     // Password change
     public $currentPassword = '';
     public $newPassword = '';
-    public $confirmPassword = '';
+    public $new_password_confirmation = '';
 
     // Settings
     public $notifications = [
@@ -31,14 +31,17 @@ class Settings extends Component
         'sms' => false,
     ];
 
+    // Role/Status
+    public $isActive = true;
+
     public function mount()
     {
-        $user = auth()->user();
+        $user = auth()->user()->load('notificationSetting');
         $this->name = $user->name;
         $this->email = $user->email;
         $this->avatarPreview = $user->avatar ? Storage::url($user->avatar) : null;
-        
-        // Load notification settings
+        $this->isActive = $user->is_active;
+
         $notificationSetting = $user->notificationSetting;
         if ($notificationSetting) {
             $this->notifications = [
@@ -47,6 +50,22 @@ class Settings extends Component
                 'sms' => $notificationSetting->sms_notifications,
             ];
         }
+    }
+
+    public function updatedIsActive($value)
+    {
+        // Only admins can toggle account status
+        if (!auth()->user()->isAdmin()) {
+            return;
+        }
+
+        auth()->user()->update(['is_active' => $value]);
+        $this->isActive = $value;
+
+        $this->dispatch('show-toast', 
+            message: $value ? 'تم تفعيل الحساب' : 'تم تعطيل الحساب',
+            type: 'success'
+        );
     }
 
     public function updatedAvatar()
@@ -99,13 +118,9 @@ class Settings extends Component
     {
         $this->validate([
             'currentPassword' => 'required',
-            'newPassword' => ['required', 'min:8', 'confirmed', Password::defaults()],
-            'confirmPassword' => 'required',
+            'newPassword' => ['required', 'min:8', Password::defaults(), 'confirmed'],
         ], [
-            'currentPassword.required' => 'كلمة المرور الحالية مطلوبة',
-            'newPassword.required' => 'كلمة المرور الجديدة مطلوبة',
-            'newPassword.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
-            'newPassword.confirmed' => 'كلمة المرور غير متطابقة',
+            'newPassword.confirmed' => 'تأكيد كلمة المرور غير متطابق',
         ]);
 
         $user = auth()->user();
@@ -126,7 +141,7 @@ class Settings extends Component
         );
 
         // Reset form
-        $this->reset(['currentPassword', 'newPassword', 'confirmPassword']);
+        $this->reset(['currentPassword', 'newPassword', 'new_password_confirmation']);
     }
 
     public function toggleNotification($type)
@@ -146,7 +161,7 @@ class Settings extends Component
         }
 
         // Update or create notification setting
-        $notificationSetting = auth()->user()->notificationSetting;
+        $notificationSetting = auth()->user()->load('notificationSetting')->notificationSetting;
         if (!$notificationSetting) {
             $notificationSetting = NotificationSetting::create([
                 'user_id' => auth()->id(),

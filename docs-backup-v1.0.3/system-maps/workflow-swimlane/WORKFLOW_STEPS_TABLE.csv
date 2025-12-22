@@ -1,0 +1,23 @@
+# الخطوة,الدور,الإجراء,المكون,الشرط,الخطوة التالية,المشكلة
+1. إنشاء وثيقة,منشئ,DocumentUpload::save,DocumentUpload,auth()->id(),2,-
+2. رفع الملف,منشئ,store('documents' 'local'),DocumentUpload,-,3,-
+3. حفظ الوثيقة,نظام,Document::create,DocumentUpload,-,4,-
+4. تسجيل الأنشطة,نظام,DocumentActivity::create('created' + 'uploaded'),DocumentUpload,-,5,-
+5. إعادة التوجيه,نظام,redirect('/documents'),DocumentUpload,-,6,-
+6. عرض الوثيقة,منشئ/مكلّف,DocumentDetail::mount,DocumentDetail,✅ DocumentPolicy@view,7,-
+7. إضافة مهام,منشئ/مكلّف,DocumentTasks::addTask,DocumentTasks,✅ visibleTo,8,-
+8. مراجعة الوثيقة,مكلّف,عرض DocumentDetail,DocumentDetail,✅ DocumentPolicy@view,9,-
+9. قرار المراجعة,مكلّف,approve() / forward() / reject(),DocumentDetail,✅ DocumentPolicy@update,10,-
+10. التحقق من الصلاحيات,نظام,DocumentPolicy@update,DocumentDetail,✅ المكلّف فقط,11,-
+11. تحديث المرحلة,نظام,update(['current_stage']),DocumentDetail,-,12,-
+12. تسجيل النشاط,نظام,DocumentActivity::create,DocumentDetail,-,13,-
+13. إشعار المستخدم,نظام,dispatch('show-toast'),DocumentDetail,-,14,⚠️ لا إشعارات
+14. تحديث لوحة سير العمل,نظام,dispatch('document-stage-changed'),WorkflowStageCard,-,15,-
+15. عرض لوحة سير العمل,أي مستخدم,WorkflowOverview,WorkflowOverview,✅ visibleTo,16,-
+16. تغيير المرحلة من اللوحة,أي مستخدم,advanceStage() / rejectStage(),WorkflowStageCard,⚠️ visibleTo فقط,11,❌ لا Policy
+17. إجراءات جماعية,أي مستخدم,bulkAction(),DocumentTable,⚠️ visibleTo فقط,11,❌ لا Policy
+18. أرشفة الوثيقة,أي مستخدم,archiveDocument(),DocumentTable,⚠️ visibleTo فقط,19,❌ لا Policy
+19. عرض الأرشيف,أي مستخدم,DocumentArchive,DocumentArchive,✅ visibleTo,20,-
+20. إلغاء الأرشفة,أي مستخدم,unarchive(),DocumentArchive,⚠️ visibleTo فقط,6,❌ لا Policy
+21. حذف نهائي,أي مستخدم,forceDelete(),DocumentArchive,⚠️ visibleTo فقط,نهاية,❌ لا Policy
+

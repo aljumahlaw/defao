@@ -39,6 +39,18 @@
                    id="file-upload"
                    class="hidden"
                    accept=".pdf,.doc,.docx,.xls,.xlsx">
+            <div wire:loading wire:target="file" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                    <div class="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-in-out"
+                         :style="'width: ' + ($wire.uploadProgress?.progress || 0) + '%'"
+                         x-data
+                         x-ref="progress">
+                    </div>
+                </div>
+                <p class="text-sm font-medium text-blue-800">
+                    جاري الرفع... <span x-text="($wire.uploadProgress?.progress || 0) + '%'"></span>
+                </p>
+            </div>
             
             <label for="file-upload"
                    class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors cursor-pointer">
