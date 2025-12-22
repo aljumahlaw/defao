@@ -147,6 +147,43 @@
         </div>
     </div>
 
+    {{-- Toggle Columns --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 mb-4">
+        <div class="flex flex-wrap items-center gap-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <x-heroicon-o-view-columns class="w-4 h-4 inline ml-1" />
+                عرض الأعمدة:
+            </span>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showTitle" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">العنوان</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showCaseNumber" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">رقم القضية</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showType" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">النوع</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showStage" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">المرحلة</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showCreatedAt" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">تاريخ الإنشاء</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showAssignee" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">المعين له</span>
+            </label>
+            <button wire:click="resetColumns" class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                إعادة تعيين
+            </button>
+        </div>
+    </div>
+
     {{-- Filters --}}
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -367,21 +404,36 @@
                             <span>تحديد الكل</span>
                         </div>
                     </th>
+                    @if($this->visibleColumns['title'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         العنوان
                     </th>
+                    @endif
+                    @if($this->visibleColumns['case_number'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         رقم القضية
                     </th>
+                    @endif
+                    @if($this->visibleColumns['type'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         النوع
                     </th>
+                    @endif
+                    @if($this->visibleColumns['stage'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         المرحلة
                     </th>
+                    @endif
+                    @if($this->visibleColumns['created_at'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         تاريخ الإنشاء
                     </th>
+                    @endif
+                    @if($this->visibleColumns['assignee'])
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        المعين له
+                    </th>
+                    @endif
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         الإجراءات
                     </th>
@@ -409,6 +461,7 @@
                                    value="{{ $doc->id }}"
                                    class="rounded border-gray-300 text-primary focus:ring-primary">
                         </td>
+                        @if($this->visibleColumns['title'])
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <x-heroicon-o-document-text class="w-4 h-4 text-gray-400" />
@@ -418,14 +471,20 @@
                                 </a>
                             </div>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['case_number'])
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 min-w-[90px] max-w-[120px] truncate case-column">
                             {{ $doc->case_number ?? 'بدون قضية' }}
                         </td>
+                        @endif
+                        @if($this->visibleColumns['type'])
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $this->getTypeBadgeClass($doc->type) }}">
                                 {{ $this->getTypeLabel($doc->type) }}
                             </span>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['stage'])
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap {{ $this->getStageBadgeClass($doc->current_stage) }}">
@@ -438,9 +497,17 @@
                                 @endif
                             </div>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['created_at'])
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" dir="rtl">
                             {{ $doc->created_at->diffForHumans() }}
                         </td>
+                        @endif
+                        @if($this->visibleColumns['assignee'])
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $doc->assignee?->name ?? '-' }}
+                        </td>
+                        @endif
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('documents.show', $doc->id) }}"
@@ -634,6 +701,18 @@
                         const link = document.createElement('a');
                         link.href = data.url;
                         link.download = data.filename;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+
+                    // S3 File Download Listener (Livewire v3)
+                    Livewire.on('download-file', (data) => {
+                        const link = document.createElement('a');
+                        link.href = data.url;
+                        link.download = data.filename;
+                        link.target = '_blank';
                         link.style.display = 'none';
                         document.body.appendChild(link);
                         link.click();

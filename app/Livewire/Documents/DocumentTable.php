@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentTable extends Component
 {
@@ -34,6 +35,14 @@ class DocumentTable extends Component
     public string $bulkActionValue = '';
     public bool $bulkLoading = false;
     public $showBulkActions = false;
+
+    // Toggle Columns
+    public bool $showTitle = true;
+    public bool $showCaseNumber = true;
+    public bool $showType = true;
+    public bool $showStage = true;
+    public bool $showCreatedAt = true;
+    public bool $showAssignee = false; // hidden by default
 
     protected $listeners = [
         'global-search-updated' => 'handleGlobalSearch',
@@ -99,11 +108,41 @@ class DocumentTable extends Component
 
     public function downloadDocument($id)
     {
-        // TODO: Phase 6 - Generate signed URL from S3
-        $this->dispatch('show-toast', 
-            message: 'قريباً: تنزيل الوثيقة #' . $id,
-            type: 'info'
-        );
+        $document = Document::visibleTo(auth()->user())->findOrFail($id);
+
+        // Check if file exists
+        if (!$document->s3_path) {
+            $this->dispatch('show-toast', 
+                message: 'لا يوجد ملف مرفق لهذه الوثيقة',
+                type: 'warning'
+            );
+            return;
+        }
+
+        try {
+            // S3 Signed URL (5 minutes expiry)
+            $url = Storage::disk('s3')->temporaryUrl(
+                $document->s3_path, 
+                now()->addMinutes(5)
+            );
+
+            // Dispatch download event to frontend
+            $this->dispatch('download-file', [
+                'url' => $url,
+                'filename' => $document->file_name ?? ($document->title . '.pdf')
+            ]);
+
+            $this->dispatch('show-toast', 
+                message: 'جاري تنزيل الوثيقة...',
+                type: 'info'
+            );
+        } catch (\Exception $e) {
+            \Log::error('S3 Download Error: ' . $e->getMessage());
+            $this->dispatch('show-toast', 
+                message: 'حدث خطأ أثناء تنزيل الملف',
+                type: 'error'
+            );
+        }
     }
 
     public function uploadNewVersion($id)
@@ -214,6 +253,29 @@ class DocumentTable extends Component
     public function resultsCount()
     {
         return $this->documents->total();
+    }
+
+    #[Computed]
+    public function visibleColumns()
+    {
+        return [
+            'title' => $this->showTitle,
+            'case_number' => $this->showCaseNumber,
+            'type' => $this->showType,
+            'stage' => $this->showStage,
+            'created_at' => $this->showCreatedAt,
+            'assignee' => $this->showAssignee,
+        ];
+    }
+
+    public function resetColumns()
+    {
+        $this->showTitle = true;
+        $this->showCaseNumber = true;
+        $this->showType = true;
+        $this->showStage = true;
+        $this->showCreatedAt = true;
+        $this->showAssignee = false;
     }
 
     public function getExistingCasesProperty()
