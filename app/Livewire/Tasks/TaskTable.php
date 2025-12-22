@@ -28,6 +28,7 @@ class TaskTable extends Component
     public function tasks()
     {
         return Task::query()
+            ->visibleTo(auth()->user()) // ✅ Role-aware filtering
             ->with([
                 'document',
                 'assignee:id,name',

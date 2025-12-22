@@ -31,6 +31,7 @@ class TaskList extends Component
     public function tasks()
     {
         return Task::query()
+            ->visibleTo(auth()->user()) // ✅ Role-aware filtering
             ->with('document', 'creator', 'assignee')
             ->when($this->statusFilter !== 'all', fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {

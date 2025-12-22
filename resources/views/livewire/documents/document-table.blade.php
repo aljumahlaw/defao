@@ -71,7 +71,12 @@
                     @endif
                     
                     @if($this->showBulkActions)
-                        <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl z-50 py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                            
+                            {{-- 📁 مجموعة الإدارة --}}
+                            <div class="px-3 py-1">
+                                <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">إدارة</span>
+                            </div>
                             
                             {{-- أرشفة --}}
                             <x-secondary-button 
@@ -79,7 +84,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkArchive"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
                                 <span wire:loading.remove wire:target="bulkArchive">📦 أرشفة المحدد</span>
                                 <span wire:loading wire:target="bulkArchive">⏳ جاري الأرشفة...</span>
                             </x-secondary-button>
@@ -90,10 +95,18 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkDelete"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors text-red-600">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm transition-colors text-red-600 dark:text-red-400">
                                 <span wire:loading.remove wire:target="bulkDelete">🗑️ حذف نهائي</span>
                                 <span wire:loading wire:target="bulkDelete">⏳ جاري الحذف...</span>
                             </x-secondary-button>
+                            
+                            {{-- Divider --}}
+                            <div class="border-t border-gray-200 dark:border-gray-600 mx-3 my-2"></div>
+                            
+                            {{-- 📤 مجموعة التصدير --}}
+                            <div class="px-3 py-1">
+                                <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">تصدير</span>
+                            </div>
                             
                             {{-- تصدير PDF --}}
                             <x-secondary-button 
@@ -101,29 +114,26 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkExportPdf"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-green-50 dark:hover:bg-green-900/20 text-sm transition-colors text-green-600 dark:text-green-400">
                                 <span wire:loading.remove wire:target="bulkExportPdf">📄 تصدير PDF</span>
                                 <span wire:loading wire:target="bulkExportPdf">⏳ جاري التصدير...</span>
                             </x-secondary-button>
-                            
-                            {{-- Divider --}}
-                            <div class="border-t border-gray-200 dark:border-gray-600 mx-2 my-2"></div>
                             
                             {{-- طباعة --}}
                             <button 
                                 type="button"
                                 onclick="handleBulkPrint()"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors bg-white dark:bg-gray-800 border-0 cursor-pointer flex items-center">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm transition-colors bg-transparent border-0 cursor-pointer flex items-center text-blue-600 dark:text-blue-400">
                                 🖨️ طباعة
                             </button>
                             
                             {{-- Divider --}}
-                            <div class="border-t border-gray-200 dark:border-gray-600 mx-2 my-2"></div>
+                            <div class="border-t border-gray-200 dark:border-gray-600 mx-3 my-2"></div>
                             
                             {{-- إغلاق --}}
                             <x-secondary-button 
                                 wire:click="$set('showBulkActions', false)"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-500 transition-colors">
+                                class="w-full justify-center text-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 ✖️ إغلاق
                             </x-secondary-button>
                         </div>

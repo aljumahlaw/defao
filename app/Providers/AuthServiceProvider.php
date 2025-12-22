@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Document;
+use App\Models\Task;
 use App\Policies\DocumentPolicy;
+use App\Policies\TaskPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -15,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Document::class => DocumentPolicy::class,
+        Task::class => TaskPolicy::class,
     ];
 
     /**
