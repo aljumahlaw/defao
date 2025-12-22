@@ -361,6 +361,20 @@
                        placeholder="ابحث عن وثيقة..."
                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
             </div>
+
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    المعين له
+                </label>
+                <select wire:model.live="assigneeFilter" 
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                    <option value="">جميع المستخدمين</option>
+                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->assignees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <option value="<?php echo e($id); ?>"><?php echo e($name); ?></option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?> <!--[if ENDBLOCK]><![endif]-->
+                </select>
+            </div>
         </div>
     </div>
 
@@ -717,10 +731,17 @@
                             </span>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap <?php echo e($this->getStageBadgeClass($doc->current_stage)); ?>">
-                                <?php echo e($this->getStageLabel($doc->current_stage)); ?>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap <?php echo e($this->getStageBadgeClass($doc->current_stage)); ?>">
+                                    <?php echo e($this->getStageLabel($doc->current_stage)); ?>
 
-                            </span>
+                                </span>
+                                <!--[if BLOCK]><![endif]--><?php if($doc->isOverdue()): ?>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                        متأخرة
+                                    </span>
+                                <?php endif; ?> <!--[if ENDBLOCK]><![endif]-->
+                            </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" dir="rtl">
                             <?php echo e($doc->created_at->diffForHumans()); ?>
@@ -921,12 +942,17 @@
                         <span class="text-sm text-gray-500 dark:text-gray-400">رقم القضية:</span>
                         <span class="text-sm text-gray-700 dark:text-gray-300"><?php echo e($doc->case_number ?? 'بدون قضية'); ?></span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-sm text-gray-500 dark:text-gray-400">المرحلة:</span>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap <?php echo e($this->getStageBadgeClass($doc->current_stage)); ?>">
                             <?php echo e($this->getStageLabel($doc->current_stage)); ?>
 
                         </span>
+                        <!--[if BLOCK]><![endif]--><?php if($doc->isOverdue()): ?>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                متأخرة
+                            </span>
+                        <?php endif; ?> <!--[if ENDBLOCK]><![endif]-->
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400" dir="rtl">
                         <?php echo e($doc->created_at->diffForHumans()); ?>

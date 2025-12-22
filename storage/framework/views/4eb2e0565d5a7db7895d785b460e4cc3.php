@@ -189,6 +189,68 @@
                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
                 </div>
             </div>
+
+            
+            <div class="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        المكلف
+                    </label>
+                    <select wire:model.live="assigneeFilter" 
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                        <option value="">جميع المكلفين</option>
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $this->assignees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $id => $name): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($id); ?>"><?php echo e($name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?> <!--[if ENDBLOCK]><![endif]-->
+                    </select>
+                </div>
+
+                
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الأولوية
+                    </label>
+                    <select wire:model.live="priorityFilter" 
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                        <option value="all">الكل</option>
+                        <option value="low">منخفضة</option>
+                        <option value="medium">متوسطة</option>
+                        <option value="high">عالية</option>
+                        <option value="urgent">عاجلة</option>
+                    </select>
+                </div>
+
+                
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        من تاريخ
+                    </label>
+                    <input type="date"
+                           wire:model.live="dateFrom"
+                           class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                </div>
+
+                
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        إلى تاريخ
+                    </label>
+                    <input type="date"
+                           wire:model.live="dateTo"
+                           class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                </div>
+
+                
+                <!--[if BLOCK]><![endif]--><?php if($assigneeFilter || $priorityFilter !== 'all' || $dateFrom || $dateTo): ?>
+                    <div class="flex items-end">
+                        <button wire:click="clearFilters" 
+                                class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            مسح الفلاتر
+                        </button>
+                    </div>
+                <?php endif; ?> <!--[if ENDBLOCK]><![endif]-->
+            </div>
         </div>
 
         
@@ -270,9 +332,16 @@
                             
                             <td class="px-6 py-4 text-center">
                                 <!--[if BLOCK]><![endif]--><?php if($task->due_date): ?>
-                                    <div class="text-sm text-gray-900 dark:text-white">
-                                        <?php echo e($task->due_date->format('Y/m/d')); ?>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <div class="text-sm text-gray-900 dark:text-white">
+                                            <?php echo e($task->due_date->format('Y/m/d')); ?>
 
+                                        </div>
+                                        <!--[if BLOCK]><![endif]--><?php if($task->is_overdue): ?>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                متأخرة
+                                            </span>
+                                        <?php endif; ?> <!--[if ENDBLOCK]><![endif]-->
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
                                         <?php echo e($task->due_date->locale('ar')->diffForHumans()); ?>

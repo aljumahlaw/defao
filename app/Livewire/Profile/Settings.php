@@ -3,6 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Models\NotificationSetting;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ class Settings extends Component
 
     // Profile info
     public $name = '';
+    public $title = '';
     public $email = '';
     public $avatar = null;
     public $avatarPreview = null;
@@ -38,6 +40,7 @@ class Settings extends Component
     {
         $user = auth()->user()->load('notificationSetting');
         $this->name = $user->name;
+        $this->title = $user->title ?? '';
         $this->email = $user->email;
         $this->avatarPreview = $user->avatar ? Storage::url($user->avatar) : null;
         $this->isActive = $user->is_active;
@@ -87,12 +90,14 @@ class Settings extends Component
     {
         $this->validate([
             'name' => 'required|max:100',
+            'title' => 'nullable|max:50',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'avatar' => 'nullable|image|max:2048',
         ]);
 
         $user = auth()->user();
         $user->name = $this->name;
+        $user->title = $this->title ?: null;
         $user->email = $this->email;
 
         // Handle avatar upload

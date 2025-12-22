@@ -56,14 +56,10 @@ class TaskList extends Component
     public function assignees()
     {
         return User::where('is_active', true)
-            ->whereIn('role', [User::ROLE_LAWYER, User::ROLE_ASSISTANT])
+            ->whereIn('role', [User::ROLE_LAWYER, User::ROLE_ASSISTANT, User::ROLE_ADMIN])
             ->orderBy('name')
-            ->get(['id', 'name', 'role'])
-            ->mapWithKeys(fn($u) => [
-                $u->id => $u->name . ' — ' .
-                    ($u->role === User::ROLE_LAWYER ? 'محامي' : 'مساعد') .
-                    ' #' . $u->id
-            ]);
+            ->get()
+            ->pluck('display_name', 'id');
     }
 
     #[Computed]

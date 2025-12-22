@@ -21,8 +21,16 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    // ✅ Title Constants (اللقب المهني)
+    public const TITLE_LAWYER_MALE = 'المحامي';
+    public const TITLE_LAWYER_FEMALE = 'المحامية';
+    public const TITLE_ASSISTANT_MALE = 'مساعد قانوني';
+    public const TITLE_ASSISTANT_FEMALE = 'مساعدة قانونية';
+    public const TITLE_ADMIN = 'المدير';
+
     protected $fillable = [
         'name',
+        'title',
         'email',
         'password',
         'avatar',
@@ -133,5 +141,60 @@ class User extends Authenticatable
                 'classes' => 'bg-gray-100 text-gray-800 border-gray-200'
             ]
         };
+    }
+
+    /**
+     * Get professional title (اللقب المهني)
+     * Uses custom title if set, otherwise derives from role
+     */
+    public function getRoleTitleAttribute(): string
+    {
+        if ($this->title) {
+            return $this->title;
+        }
+
+        return match($this->role) {
+            self::ROLE_ADMIN => self::TITLE_ADMIN,
+            self::ROLE_LAWYER => self::TITLE_LAWYER_MALE,
+            self::ROLE_ASSISTANT => self::TITLE_ASSISTANT_MALE,
+            default => 'مستخدم'
+        };
+    }
+
+    /**
+     * Get display name for dropdowns (اسم العرض الذكي)
+     * Unique: "اللقب + الاسم الأول"
+     * Duplicate: "اللقب + الاسم الكامل"
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        $nameParts = explode(' ', trim($this->name));
+        $firstName = $nameParts[0] ?? $this->name;
+
+        // Count users with same first name (excluding self)
+        $similarCount = static::where('name', 'like', $firstName . '%')
+            ->where('id', '!=', $this->id)
+            ->where('is_active', true)
+            ->count();
+
+        if ($similarCount === 0) {
+            return $this->role_title . ' ' . $firstName;
+        }
+
+        return $this->role_title . ' ' . $this->name;
+    }
+
+    /**
+     * Get available titles for dropdown
+     */
+    public static function getTitles(): array
+    {
+        return [
+            self::TITLE_LAWYER_MALE => self::TITLE_LAWYER_MALE,
+            self::TITLE_LAWYER_FEMALE => self::TITLE_LAWYER_FEMALE,
+            self::TITLE_ASSISTANT_MALE => self::TITLE_ASSISTANT_MALE,
+            self::TITLE_ASSISTANT_FEMALE => self::TITLE_ASSISTANT_FEMALE,
+            self::TITLE_ADMIN => self::TITLE_ADMIN,
+        ];
     }
 }

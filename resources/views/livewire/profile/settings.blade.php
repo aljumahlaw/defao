@@ -69,20 +69,46 @@
                 </div>
             </div>
 
-            {{-- Name --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    الاسم <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="text" 
-                    wire:model.blur="name"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('name') border-red-500 @enderror"
-                    placeholder="أدخل الاسم"
-                >
-                @error('name')
-                    <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
-                @enderror
+            {{-- Name & Title Row --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- Title (اللقب المهني) --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        اللقب المهني
+                    </label>
+                    <select 
+                        wire:model.blur="title"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('title') border-red-500 @enderror"
+                    >
+                        <option value="">-- تلقائي حسب الدور --</option>
+                        @foreach(\App\Models\User::getTitles() as $key => $label)
+                            <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('title')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">يظهر في قوائم الاختيار</p>
+                </div>
+
+                {{-- Name --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الاسم الكامل <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        wire:model.blur="name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('name') border-red-500 @enderror"
+                        placeholder="مثال: رنيم أحمد محمد"
+                    >
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        سيظهر كـ "{{ auth()->user()->role_title }} {{ explode(' ', $name)[0] ?? '' }}" في القوائم
+                    </p>
+                </div>
             </div>
 
             {{-- Email --}}
