@@ -325,7 +325,15 @@ class DocumentTable extends Component
             })
             ->latest();
 
-        $documents = $query->get();
+        // ✅ P1-9: OOM Protection - limit(500) + smart warning
+        $totalCount = $query->count();
+        if ($totalCount > 500) {
+            $this->dispatch('show-toast', 
+                message: 'الحد الأقصى 500 مستند. استخدم Bulk Export للمزيد (' . $totalCount . ' إجمالي)',
+                type: 'warning');
+            return;
+        }
+        $documents = $query->limit(500)->get();
 
         // Configure DomPDF for Arabic/UTF-8 support
         $options = new Options();
