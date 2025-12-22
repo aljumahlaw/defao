@@ -59,7 +59,7 @@
         </div>
         
         {{-- Toast Notifications --}}
-        <x-toast-notification />
+        <x-toast />
         
         {{-- Dark Mode & Language Initialization --}}
         <script>
