@@ -604,7 +604,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
                     <a href="{{ route('documents.show', $doc->id) }}"
                        class="flex items-center justify-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors">
                         <x-heroicon-o-eye class="w-4 h-4" />
