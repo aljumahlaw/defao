@@ -19,6 +19,63 @@
         </div>
     </div>
 
+    {{-- Action Items Card - P1-3 --}}
+    <div class="bg-gradient-to-r from-red-50 to-yellow-50 dark:from-red-900/20 dark:to-yellow-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800/50 mb-8">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            ماذا أفعل الآن؟
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {{-- Overdue Tasks --}}
+            <a href="/tasks?statusFilter=overdue" class="group p-4 bg-white dark:bg-gray-800 rounded-lg border border-red-200 hover:border-red-400 transition-all hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">مهام متأخرة</p>
+                        <p class="text-2xl font-bold text-red-600">{{ $this->actionItems['overdue_tasks'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </a>
+            
+            {{-- Today Tasks --}}
+            <a href="/tasks?date=today" class="group p-4 bg-white dark:bg-gray-800 rounded-lg border border-yellow-200 hover:border-yellow-400 transition-all hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">مهام اليوم</p>
+                        <p class="text-2xl font-bold text-yellow-600">{{ $this->actionItems['today_tasks'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </a>
+            
+            {{-- My Review Docs --}}
+            <a href="/documents?stage=review1" class="group p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 hover:border-blue-400 transition-all hover:shadow-md hover:-translate-y-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">تنتظر مراجعتي</p>
+                        <p class="text-2xl font-bold text-blue-600">{{ $this->actionItems['my_review_docs'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
     {{-- Stats Widgets --}}
     <div class="mb-8">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">الإحصائيات</h2>

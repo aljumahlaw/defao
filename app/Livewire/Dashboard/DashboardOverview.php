@@ -41,6 +41,40 @@ class DashboardOverview extends Component
     }
 
     #[Computed]
+    public function actionItems()
+    {
+        $user = auth()->user();
+        
+        // Base task query - role-aware
+        $taskBase = Task::where(function($q) use ($user) {
+            if ($user->isAdmin()) return $q;
+            if ($user->isLawyer()) {
+                return $q->where('user_id', $user->id)
+                         ->orWhere('assignee_id', $user->id);
+            }
+            return $q->where('assignee_id', $user->id); // Assistant
+        });
+
+        return [
+            'overdue_tasks' => (clone $taskBase)
+                ->where('status', '!=', 'completed')
+                ->where('due_date', '<', now())
+                ->count(),
+                
+            'today_tasks' => (clone $taskBase)
+                ->whereDate('due_date', today())
+                ->where('status', '!=', 'completed')
+                ->count(),
+                
+            'my_review_docs' => Document::visibleTo($user)
+                ->where('current_stage', 'review1')
+                ->where('assignee_id', $user->id)
+                ->where('is_archived', false)
+                ->count(),
+        ];
+    }
+
+    #[Computed]
     public function recentActivity()
     {
         return DocumentActivity::with(['user', 'document'])
