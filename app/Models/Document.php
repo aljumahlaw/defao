@@ -85,6 +85,26 @@ class Document extends Model
         $this->update(['is_archived' => false]);
     }
 
+    /**
+     * Check if document is overdue based on stage
+     * review1: 7 days, proofread: 5 days, finalapproval: 3 days
+     */
+    public function isOverdue(): bool
+    {
+        if ($this->is_archived || $this->current_stage === 'draft') {
+            return false;
+        }
+
+        $daysLimit = match($this->current_stage) {
+            'review1' => 7,
+            'proofread' => 5,
+            'finalapproval' => 3,
+            default => 0,
+        };
+
+        return $daysLimit > 0 && $this->updated_at < now()->subDays($daysLimit);
+    }
+
     // Scopes
     public function scopeVisibleTo($query, User $user)
     {

@@ -110,4 +110,15 @@ class Task extends Model
                   ->where('due_date', '<', now());
             });
     }
+
+    /**
+     * Check if task is overdue
+     * Used for badges in UI
+     */
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->status !== 'completed' 
+            && $this->due_date 
+            && $this->due_date < now();
+    }
 }

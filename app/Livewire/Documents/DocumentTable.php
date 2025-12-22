@@ -3,6 +3,7 @@
 namespace App\Livewire\Documents;
 
 use App\Models\Document;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
@@ -25,6 +26,7 @@ class DocumentTable extends Component
     public $dateTo = '';
     public $caseFilter = '';
     public $caseNumber = '';
+    public $assigneeFilter = '';
 
     // Bulk Actions
     public array $selected = [];
@@ -66,7 +68,8 @@ class DocumentTable extends Component
             ->when($this->archived, fn($q) => $q->where('is_archived', true))
             ->when($this->search, fn($q) => $q->where('title', 'like', '%' . $this->search . '%'))
             ->when($this->dateFrom, fn($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn($q) => $q->whereDate('created_at', '<=', $this->dateTo));
+            ->when($this->dateTo, fn($q) => $q->whereDate('created_at', '<=', $this->dateTo))
+            ->when($this->assigneeFilter, fn($q) => $q->where('assignee_id', $this->assigneeFilter));
 
         // CASE FILTER - أضف هنا بالضبط:
         if ($this->caseFilter === 'none') {
@@ -193,7 +196,20 @@ class DocumentTable extends Component
         $this->type = 'all';
         $this->dateFrom = '';
         $this->dateTo = '';
+        $this->assigneeFilter = '';
         $this->resetPage();
+    }
+
+    #[Computed]
+    public function assignees()
+    {
+        return User::where('is_active', true)
+            ->where(function($q) {
+                $q->where('role', User::ROLE_LAWYER)
+                  ->orWhere('role', User::ROLE_ASSISTANT);
+            })
+            ->orderBy('name')
+            ->pluck('name', 'id');
     }
 
     #[Computed]
