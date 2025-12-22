@@ -16,7 +16,11 @@ class Settings extends Component
 
     // Profile info
     public $name = '';
+    public $first_name = '';
+    public $middle_name = '';
+    public $last_name = '';
     public $title = '';
+    public $phone = '';
     public $email = '';
     public $avatar = null;
     public $avatarPreview = null;
@@ -41,9 +45,16 @@ class Settings extends Component
         $user = auth()->user()->load('notificationSetting');
         $this->name = $user->name;
         $this->title = $user->title ?? '';
+        $this->phone = $user->phone ?? '';
         $this->email = $user->email;
         $this->avatarPreview = $user->avatar ? Storage::url($user->avatar) : null;
         $this->isActive = $user->is_active;
+
+        // تفكيك الاسم إلى 3 أجزاء
+        $names = explode(' ', trim($user->name));
+        $this->first_name = $names[0] ?? '';
+        $this->middle_name = $names[1] ?? '';
+        $this->last_name = implode(' ', array_slice($names, 2)) ?: '';
 
         $notificationSetting = $user->notificationSetting;
         if ($notificationSetting) {
@@ -89,15 +100,24 @@ class Settings extends Component
     public function updateProfile()
     {
         $this->validate([
-            'name' => 'required|max:100',
-            'title' => 'nullable|max:50',
+            'first_name' => 'required|string|max:50',
+            'middle_name' => 'nullable|string|max:50',
+            'last_name' => 'nullable|string|max:50',
+            'title' => 'nullable|in:المحامي,المحامية,مساعد قانوني,مساعدة قانونية,المدير',
+            'phone' => 'nullable|string|max:20',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'avatar' => 'nullable|image|max:2048',
         ]);
 
         $user = auth()->user();
-        $user->name = $this->name;
+        
+        // تجميع الاسم الكامل
+        $fullName = trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+        $user->name = $fullName;
+        $this->name = $fullName; // sync the old property
+        
         $user->title = $this->title ?: null;
+        $user->phone = $this->phone ?: null;
         $user->email = $this->email;
 
         // Handle avatar upload

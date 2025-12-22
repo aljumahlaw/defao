@@ -69,9 +69,60 @@
                 </div>
             </div>
 
-            {{-- Name & Title Row --}}
+            {{-- تفصيل الاسم (3 خانات) --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {{-- Title (اللقب المهني) --}}
+                {{-- الاسم الأول --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الاسم الأول <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        wire:model.blur="first_name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('first_name') border-red-500 @enderror"
+                        placeholder="رنيم"
+                    >
+                    @error('first_name')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- الاسم الأوسط --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الاسم الأوسط
+                    </label>
+                    <input 
+                        type="text" 
+                        wire:model.blur="middle_name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('middle_name') border-red-500 @enderror"
+                        placeholder="أحمد"
+                    >
+                    @error('middle_name')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- الاسم الأخير --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الاسم الأخير
+                    </label>
+                    <input 
+                        type="text" 
+                        wire:model.blur="last_name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('last_name') border-red-500 @enderror"
+                        placeholder="محمد"
+                    >
+                    @error('last_name')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- اللقب المهني + رقم الجوال --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{-- اللقب المهني --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         اللقب المهني
@@ -80,34 +131,36 @@
                         wire:model.blur="title"
                         class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('title') border-red-500 @enderror"
                     >
-                        <option value="">-- تلقائي حسب الدور --</option>
-                        @foreach(\App\Models\User::getTitles() as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
+                        <option value="">اختر اللقب</option>
+                        <option value="المحامي">المحامي</option>
+                        <option value="المحامية">المحامية</option>
+                        <option value="مساعد قانوني">مساعد قانوني</option>
+                        <option value="مساعدة قانونية">مساعدة قانونية</option>
+                        <option value="المدير">المدير</option>
                     </select>
                     @error('title')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">يظهر في قوائم الاختيار</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        سيظهر كـ "{{ $title ?: auth()->user()->role_title }} {{ $first_name }}" في القوائم
+                    </p>
                 </div>
 
-                {{-- Name --}}
-                <div class="md:col-span-2">
+                {{-- رقم الجوال --}}
+                <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        الاسم الكامل <span class="text-red-500">*</span>
+                        رقم الجوال
                     </label>
                     <input 
-                        type="text" 
-                        wire:model.blur="name"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('name') border-red-500 @enderror"
-                        placeholder="مثال: رنيم أحمد محمد"
+                        type="tel" 
+                        wire:model.blur="phone"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('phone') border-red-500 @enderror"
+                        placeholder="05xxxxxxxx"
+                        dir="ltr"
                     >
-                    @error('name')
+                    @error('phone')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        سيظهر كـ "{{ auth()->user()->role_title }} {{ explode(' ', $name)[0] ?? '' }}" في القوائم
-                    </p>
                 </div>
             </div>
 

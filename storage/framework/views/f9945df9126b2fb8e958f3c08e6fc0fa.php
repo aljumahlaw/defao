@@ -136,14 +136,15 @@ unset($__errorArgs, $__bag); ?> <!--[if ENDBLOCK]><![endif]-->
             </div>
 
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    الاسم <span class="text-red-500">*</span>
-                </label>
-                <input 
-                    type="text" 
-                    wire:model.blur="name"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary <?php $__errorArgs = ['name'];
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        اللقب المهني
+                    </label>
+                    <select 
+                        wire:model.blur="title"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary <?php $__errorArgs = ['title'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -151,18 +152,57 @@ $message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($messag
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>"
-                    placeholder="أدخل الاسم"
-                >
-                <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['name'];
+                    >
+                        <option value="">-- تلقائي حسب الدور --</option>
+                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = \App\Models\User::getTitles(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($key); ?>"><?php echo e($label); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?> <!--[if ENDBLOCK]><![endif]-->
+                    </select>
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['title'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?>
-                    <p class="mt-1 text-sm text-red-500"><?php echo e($message); ?></p>
-                <?php unset($message);
+                        <p class="mt-1 text-sm text-red-500"><?php echo e($message); ?></p>
+                    <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?> <!--[if ENDBLOCK]><![endif]-->
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">يظهر في قوائم الاختيار</p>
+                </div>
+
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الاسم الكامل <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        wire:model.blur="name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                        placeholder="مثال: رنيم أحمد محمد"
+                    >
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                        <p class="mt-1 text-sm text-red-500"><?php echo e($message); ?></p>
+                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?> <!--[if ENDBLOCK]><![endif]-->
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        سيظهر كـ "<?php echo e(auth()->user()->role_title); ?> <?php echo e(explode(' ', $name)[0] ?? ''); ?>" في القوائم
+                    </p>
+                </div>
             </div>
 
             
