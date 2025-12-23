@@ -189,11 +189,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         رقم الجوال
                     </label>
-                    <div class="flex rounded-xl border-2 border-gray-200 dark:border-gray-600 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 overflow-hidden bg-white dark:bg-gray-800">
-                        {{-- Prefix 05 ثابت --}}
-                        <span class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 text-lg font-semibold text-gray-900 dark:text-gray-200 border-l border-gray-200 dark:border-gray-600 whitespace-nowrap select-none">
-                            05
-                        </span>
+                    <div class="flex rounded-xl border-2 border-gray-200 dark:border-gray-600 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 overflow-hidden bg-white dark:bg-gray-800" dir="rtl">
                         {{-- 8 أرقام فقط --}}
                         <input 
                             type="text" 
@@ -205,8 +201,12 @@
                             pattern="[0-9]{8}"
                             placeholder="xxxxxxxx"
                             dir="ltr"
-                            class="w-full px-4 py-3 text-lg font-medium text-left focus:outline-none focus:ring-0 bg-transparent border-0 @error('phoneDigits') text-red-500 @enderror"
+                            class="flex-1 px-4 py-3 text-lg font-medium text-right focus:outline-none focus:ring-0 bg-transparent border-0 @error('phoneDigits') text-red-500 @enderror"
                         >
+                        {{-- Prefix 05 ثابت --}}
+                        <span class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 text-lg font-semibold text-gray-900 dark:text-gray-200 border-r border-gray-200 dark:border-gray-600 whitespace-nowrap select-none">
+                            05
+                        </span>
                     </div>
                     @error('phoneDigits')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
