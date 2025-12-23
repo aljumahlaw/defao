@@ -46,7 +46,9 @@
                         <div class="relative w-28 h-28 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600 transition-all duration-300"
                              :class="{ 'border-primary border-dashed': isDragging }">
                             @if($avatarPreview)
-                                <img src="{{ $avatarPreview }}" alt="Avatar" class="w-full h-full object-cover">
+                                <img src="{{ $avatarPreview }}" alt="Avatar Preview" class="w-full h-full object-cover">
+                            @elseif($currentAvatar)
+                                <img src="{{ $currentAvatar }}" alt="Current Avatar" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                                     <x-heroicon-o-user class="w-14 h-14 text-primary/60" />
@@ -64,7 +66,7 @@
                     </label>
                     
                     {{-- Remove Button --}}
-                    @if($avatarPreview)
+                    @if($avatarPreview || $currentAvatar)
                         <button type="button" 
                                 wire:click="removeAvatar" 
                                 class="absolute -bottom-1 -right-1 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors">

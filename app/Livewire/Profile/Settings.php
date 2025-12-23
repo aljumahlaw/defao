@@ -25,6 +25,7 @@ class Settings extends Component
     public $email = '';
     public $avatar = null;
     public $avatarPreview = null;
+    public $currentAvatar = null; // الصورة الحالية من DB
 
     // Password change
     public $currentPassword = '';
@@ -48,7 +49,8 @@ class Settings extends Component
         $this->title = $user->title ?? '';
         $this->phone = $user->phone ?? '';
         $this->email = $user->email;
-        $this->avatarPreview = $user->avatar ? Storage::url($user->avatar) : null;
+        $this->currentAvatar = $user->avatar ? Storage::url($user->avatar) : null;
+        $this->avatarPreview = null; // preview للصورة الجديدة فقط
         $this->isActive = $user->is_active;
 
         // Phone: استخراج 8 أرقام بعد 05
@@ -115,6 +117,7 @@ class Settings extends Component
         // Reset properties
         $this->avatar = null;
         $this->avatarPreview = null;
+        $this->currentAvatar = null;
         
         $this->dispatch('show-toast', 
             message: 'تم حذف الصورة بنجاح',
@@ -172,8 +175,9 @@ class Settings extends Component
         
         $this->name = $fullName; // sync the old property
         
-        // Update preview after save
-        $this->avatarPreview = $avatarPath ? Storage::url($avatarPath) : null;
+        // Update avatar properties after save
+        $this->currentAvatar = $avatarPath ? Storage::url($avatarPath) : null;
+        $this->avatarPreview = null; // reset preview
         $this->avatar = null; // reset uploaded file
 
         $this->dispatch('show-toast', 
