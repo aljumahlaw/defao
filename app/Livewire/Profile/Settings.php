@@ -102,8 +102,24 @@ class Settings extends Component
 
     public function removeAvatar()
     {
+        $user = auth()->user();
+        
+        // Delete from storage if exists
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        
+        // Clear DB
+        $user->update(['avatar' => null]);
+        
+        // Reset properties
         $this->avatar = null;
         $this->avatarPreview = null;
+        
+        $this->dispatch('show-toast', 
+            message: 'تم حذف الصورة بنجاح',
+            type: 'success'
+        );
     }
 
     public function updateProfile()
