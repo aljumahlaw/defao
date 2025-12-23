@@ -158,12 +158,15 @@ class Settings extends Component
         // Handle avatar upload
         if ($this->avatar) {
             // Delete old avatar if exists
-            if ($user->avatar && Storage::exists($user->avatar)) {
-                Storage::delete($user->avatar);
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
             }
             
             // Store new avatar
             $user->avatar = $this->avatar->store('avatars', 'public');
+            
+            // Update preview after save
+            $this->avatarPreview = Storage::url($user->avatar);
         }
 
         $user->save();
