@@ -145,17 +145,9 @@ class Settings extends Component
         }
 
         $user = auth()->user();
+        $avatarPath = $user->avatar; // الحالي
         
-        // تجميع الاسم الكامل
-        $fullName = trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
-        $user->name = $fullName;
-        $this->name = $fullName; // sync the old property
-        
-        $user->title = $this->title ?: null;
-        $user->phone = $this->phone ?: null;
-        $user->email = $this->email;
-
-        // Handle avatar upload
+        // Handle avatar upload FIRST
         if ($this->avatar) {
             // Delete old avatar if exists
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
@@ -163,13 +155,26 @@ class Settings extends Component
             }
             
             // Store new avatar
-            $user->avatar = $this->avatar->store('avatars', 'public');
-            
-            // Update preview after save
-            $this->avatarPreview = Storage::url($user->avatar);
+            $avatarPath = $this->avatar->store('avatars', 'public');
         }
-
-        $user->save();
+        
+        // تجميع الاسم الكامل
+        $fullName = trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+        
+        // Update all fields at once using update()
+        $user->update([
+            'name' => $fullName,
+            'title' => $this->title ?: null,
+            'phone' => $this->phone ?: null,
+            'email' => $this->email,
+            'avatar' => $avatarPath, // ← المفتاح!
+        ]);
+        
+        $this->name = $fullName; // sync the old property
+        
+        // Update preview after save
+        $this->avatarPreview = $avatarPath ? Storage::url($avatarPath) : null;
+        $this->avatar = null; // reset uploaded file
 
         $this->dispatch('show-toast', 
             message: 'تم تحديث الملف الشخصي بنجاح',
