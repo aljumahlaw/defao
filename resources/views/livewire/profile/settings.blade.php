@@ -184,36 +184,38 @@
                     </p>
                 </div>
 
-                {{-- رقم الجوال (Saudi Format) --}}
+                {{-- Saudi Phone: 05 ثابت + 8 أرقام --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         رقم الجوال
                     </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <span class="text-lg">🇸🇦</span>
-                            <span class="text-gray-400 text-sm mr-1">+966</span>
-                        </div>
+                    <div class="flex rounded-xl border-2 border-gray-200 dark:border-gray-600 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 overflow-hidden bg-white dark:bg-gray-800">
+                        {{-- Prefix 05 ثابت --}}
+                        <span class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 text-lg font-semibold text-gray-900 dark:text-gray-200 border-l border-gray-200 dark:border-gray-600 whitespace-nowrap select-none">
+                            05
+                        </span>
+                        {{-- 8 أرقام فقط --}}
                         <input 
-                            type="tel" 
-                            wire:model.blur="phone"
+                            type="text" 
+                            wire:model.live="phoneDigits"
                             x-data
-                            x-on:input="
-                                let v = $el.value.replace(/\D/g, '').substring(0, 9);
-                                if (v.length > 2) v = v.substring(0,2) + '-' + v.substring(2);
-                                if (v.length > 6) v = v.substring(0,6) + '-' + v.substring(6);
-                                $el.value = v;
-                            "
-                            class="w-full pr-24 rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary focus:ring-primary @error('phone') border-red-500 @enderror"
-                            placeholder="5X-XXX-XXXX"
+                            x-on:input="$el.value = $el.value.replace(/[^0-9]/g, '').substring(0, 8)"
+                            maxlength="8"
+                            inputmode="numeric"
+                            pattern="[0-9]{8}"
+                            placeholder="xxxxxxxx"
                             dir="ltr"
-                            maxlength="12"
+                            class="w-full px-4 py-3 text-lg font-medium text-left focus:outline-none focus:ring-0 bg-transparent border-0 @error('phoneDigits') text-red-500 @enderror"
                         >
                     </div>
-                    @error('phone')
+                    @error('phoneDigits')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">مثال: 50-123-4567</p>
+                    @if($phoneDigits && strlen($phoneDigits) === 8)
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            الرقم الكامل: <strong class="text-gray-700 dark:text-gray-300">05{{ $phoneDigits }}</strong>
+                        </p>
+                    @endif
                 </div>
             </div>
 

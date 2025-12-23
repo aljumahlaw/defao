@@ -21,6 +21,7 @@ class Settings extends Component
     public $last_name = '';
     public $title = '';
     public $phone = '';
+    public $phoneDigits = ''; // 8 أرقام فقط (بعد 05)
     public $email = '';
     public $avatar = null;
     public $avatarPreview = null;
@@ -49,6 +50,14 @@ class Settings extends Component
         $this->email = $user->email;
         $this->avatarPreview = $user->avatar ? Storage::url($user->avatar) : null;
         $this->isActive = $user->is_active;
+
+        // Phone: استخراج 8 أرقام بعد 05
+        if ($user->phone && strlen($user->phone) >= 10) {
+            $digits = preg_replace('/[^0-9]/', '', $user->phone); // إزالة أي غير أرقام
+            if (strlen($digits) >= 10) {
+                $this->phoneDigits = substr($digits, 2, 8); // آخر 8 أرقام بعد 05
+            }
+        }
 
         // تفكيك الاسم إلى 3 أجزاء
         $names = explode(' ', trim($user->name));
@@ -104,10 +113,20 @@ class Settings extends Component
             'middle_name' => 'nullable|string|max:50',
             'last_name' => 'nullable|string|max:50',
             'title' => 'nullable|in:المحامي,المحامية,مساعد قانوني,مساعدة قانونية,المدير',
-            'phone' => 'nullable|string|max:20',
+            'phoneDigits' => 'nullable|string|size:8|regex:/^[0-9]+$/',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'avatar' => 'nullable|image|max:2048',
+        ], [
+            'phoneDigits.size' => 'رقم الجوال يجب أن يكون 8 أرقام',
+            'phoneDigits.regex' => 'رقم الجوال يجب أن يحتوي على أرقام فقط',
         ]);
+
+        // جمع 05 + 8 أرقام
+        if ($this->phoneDigits && strlen($this->phoneDigits) === 8) {
+            $this->phone = '05' . $this->phoneDigits;
+        } else {
+            $this->phone = null;
+        }
 
         $user = auth()->user();
         
