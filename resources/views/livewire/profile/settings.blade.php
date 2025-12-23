@@ -179,9 +179,6 @@
                     @error('title')
                         <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        سيظهر كـ "{{ $title ?: auth()->user()->role_title }} {{ $first_name }}" في القوائم
-                    </p>
                 </div>
 
                 {{-- Saudi Phone: 05 ثابت + 8 أرقام --}}
