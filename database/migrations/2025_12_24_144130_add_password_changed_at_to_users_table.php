@@ -12,15 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'lawyer', 'assistant'])
-                ->default('lawyer')
-                ->after('email')
-                ->index(); // ✅ Index للأداء
-
-            $table->boolean('is_active')
-                ->default(true)
-                ->after('role')
-                ->index(); // ✅ Index للأداء
+            if (!Schema::hasColumn('users', 'password_changed_at')) {
+                $table->timestamp('password_changed_at')->nullable()->after('password');
+            }
         });
     }
 
@@ -30,17 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
-            $table->dropIndex(['is_active']);
-            $table->dropColumn(['role', 'is_active']);
+            if (Schema::hasColumn('users', 'password_changed_at')) {
+                $table->dropColumn('password_changed_at');
+            }
         });
     }
 };
-
-
-
-
-
-
-
-

@@ -12,15 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'lawyer', 'assistant'])
-                ->default('lawyer')
-                ->after('email')
-                ->index(); // ✅ Index للأداء
-
-            $table->boolean('is_active')
-                ->default(true)
-                ->after('role')
-                ->index(); // ✅ Index للأداء
+            $table->string('title', 50)->nullable()->after('name'); // محامي/محامية/مساعد/مدير
         });
     }
 
@@ -30,17 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
-            $table->dropIndex(['is_active']);
-            $table->dropColumn(['role', 'is_active']);
+            $table->dropColumn('title');
         });
     }
 };
-
-
-
-
-
-
-
-

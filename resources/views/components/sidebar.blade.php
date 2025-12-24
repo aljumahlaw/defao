@@ -41,11 +41,15 @@
                 ['route' => 'archive.index', 'icon' => 'archive-box', 'label' => 'الأرشيف'],
                 ['route' => 'profile.settings', 'icon' => 'user-circle', 'label' => 'الملف الشخصي'],
             ];
+
+            if (auth()->check() && auth()->user()->isAdmin()) {
+                $menuItems[] = ['route' => 'admin.users', 'icon' => 'cog-6-tooth', 'label' => 'إدارة الموظفين'];
+            }
             @endphp
 
             @foreach($menuItems as $item)
                 @php
-                $isActive = $item['route'] !== '#' && request()->routeIs($item['route']);
+                $isActive = $item['route'] !== '#' && request()->routeIs($item['route'] . '*');
                 $iconComponent = match($item['icon']) {
                     'home' => 'heroicon-o-home',
                     'clipboard-document-list' => 'heroicon-o-clipboard-document-list',

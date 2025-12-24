@@ -71,7 +71,12 @@
                     @endif
                     
                     @if($this->showBulkActions)
-                        <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl z-50 py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl z-50 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                            
+                            {{-- 📁 مجموعة الإدارة --}}
+                            <div class="px-3 py-1">
+                                <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">إدارة</span>
+                            </div>
                             
                             {{-- أرشفة --}}
                             <x-secondary-button 
@@ -79,7 +84,7 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkArchive"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
                                 <span wire:loading.remove wire:target="bulkArchive">📦 أرشفة المحدد</span>
                                 <span wire:loading wire:target="bulkArchive">⏳ جاري الأرشفة...</span>
                             </x-secondary-button>
@@ -90,10 +95,18 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkDelete"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors text-red-600">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-sm transition-colors text-red-600 dark:text-red-400">
                                 <span wire:loading.remove wire:target="bulkDelete">🗑️ حذف نهائي</span>
                                 <span wire:loading wire:target="bulkDelete">⏳ جاري الحذف...</span>
                             </x-secondary-button>
+                            
+                            {{-- Divider --}}
+                            <div class="border-t border-gray-200 dark:border-gray-600 mx-3 my-2"></div>
+                            
+                            {{-- 📤 مجموعة التصدير --}}
+                            <div class="px-3 py-1">
+                                <span class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">تصدير</span>
+                            </div>
                             
                             {{-- تصدير PDF --}}
                             <x-secondary-button 
@@ -101,29 +114,26 @@
                                 wire:loading.attr="disabled"
                                 wire:loading.class="opacity-50 cursor-wait"
                                 wire:target="bulkExportPdf"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-green-50 dark:hover:bg-green-900/20 text-sm transition-colors text-green-600 dark:text-green-400">
                                 <span wire:loading.remove wire:target="bulkExportPdf">📄 تصدير PDF</span>
                                 <span wire:loading wire:target="bulkExportPdf">⏳ جاري التصدير...</span>
                             </x-secondary-button>
-                            
-                            {{-- Divider --}}
-                            <div class="border-t border-gray-200 dark:border-gray-600 mx-2 my-2"></div>
                             
                             {{-- طباعة --}}
                             <button 
                                 type="button"
                                 onclick="handleBulkPrint()"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors bg-white dark:bg-gray-800 border-0 cursor-pointer flex items-center">
+                                class="w-full justify-start text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm transition-colors bg-transparent border-0 cursor-pointer flex items-center text-blue-600 dark:text-blue-400">
                                 🖨️ طباعة
                             </button>
                             
                             {{-- Divider --}}
-                            <div class="border-t border-gray-200 dark:border-gray-600 mx-2 my-2"></div>
+                            <div class="border-t border-gray-200 dark:border-gray-600 mx-3 my-2"></div>
                             
                             {{-- إغلاق --}}
                             <x-secondary-button 
                                 wire:click="$set('showBulkActions', false)"
-                                class="w-full justify-start text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-500 transition-colors">
+                                class="w-full justify-center text-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-500 dark:text-gray-400 transition-colors">
                                 ✖️ إغلاق
                             </x-secondary-button>
                         </div>
@@ -134,6 +144,43 @@
                     <x-heroicon-o-arrow-path class="w-5 h-5" />
                 </button>
             </div>
+        </div>
+    </div>
+
+    {{-- Toggle Columns --}}
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-3 mb-4">
+        <div class="flex flex-wrap items-center gap-4">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <x-heroicon-o-view-columns class="w-4 h-4 inline ml-1" />
+                عرض الأعمدة:
+            </span>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showTitle" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">العنوان</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showCaseNumber" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">رقم القضية</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showType" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">النوع</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showStage" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">المرحلة</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showCreatedAt" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">تاريخ الإنشاء</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" wire:model.live="showAssignee" class="rounded border-gray-300 text-primary focus:ring-primary">
+                <span class="text-gray-700 dark:text-gray-300">المعين له</span>
+            </label>
+            <button wire:click="resetColumns" class="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                إعادة تعيين
+            </button>
         </div>
     </div>
 
@@ -202,6 +249,20 @@
                        wire:model.live.debounce.300ms="search"
                        placeholder="ابحث عن وثيقة..."
                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+            </div>
+
+            {{-- Assignee Filter --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    المعين له
+                </label>
+                <select wire:model.live="assigneeFilter" 
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                    <option value="">جميع المستخدمين</option>
+                    @foreach($this->assignees as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
@@ -343,21 +404,36 @@
                             <span>تحديد الكل</span>
                         </div>
                     </th>
+                    @if($this->visibleColumns['title'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         العنوان
                     </th>
+                    @endif
+                    @if($this->visibleColumns['case_number'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         رقم القضية
                     </th>
+                    @endif
+                    @if($this->visibleColumns['type'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         النوع
                     </th>
+                    @endif
+                    @if($this->visibleColumns['stage'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         المرحلة
                     </th>
+                    @endif
+                    @if($this->visibleColumns['created_at'])
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         تاريخ الإنشاء
                     </th>
+                    @endif
+                    @if($this->visibleColumns['assignee'])
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        المعين له
+                    </th>
+                    @endif
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         الإجراءات
                     </th>
@@ -385,6 +461,7 @@
                                    value="{{ $doc->id }}"
                                    class="rounded border-gray-300 text-primary focus:ring-primary">
                         </td>
+                        @if($this->visibleColumns['title'])
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <x-heroicon-o-document-text class="w-4 h-4 text-gray-400" />
@@ -394,22 +471,43 @@
                                 </a>
                             </div>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['case_number'])
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 min-w-[90px] max-w-[120px] truncate case-column">
                             {{ $doc->case_number ?? 'بدون قضية' }}
                         </td>
+                        @endif
+                        @if($this->visibleColumns['type'])
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $this->getTypeBadgeClass($doc->type) }}">
                                 {{ $this->getTypeLabel($doc->type) }}
                             </span>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['stage'])
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap {{ $this->getStageBadgeClass($doc->current_stage) }}">
-                                {{ $this->getStageLabel($doc->current_stage) }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap {{ $this->getStageBadgeClass($doc->current_stage) }}">
+                                    {{ $this->getStageLabel($doc->current_stage) }}
+                                </span>
+                                @if($doc->isOverdue())
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                        متأخرة
+                                    </span>
+                                @endif
+                            </div>
                         </td>
+                        @endif
+                        @if($this->visibleColumns['created_at'])
                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" dir="rtl">
                             {{ $doc->created_at->diffForHumans() }}
                         </td>
+                        @endif
+                        @if($this->visibleColumns['assignee'])
+                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $doc->assignee?->name ?? '-' }}
+                        </td>
+                        @endif
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('documents.show', $doc->id) }}"
@@ -434,6 +532,12 @@
                                         <x-heroicon-o-archive-box class="w-4 h-4" />
                                     </button>
                                 @endif
+                                <button type="button"
+                                        wire:click="openSendEmail({{ $doc->id }})"
+                                        class="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors"
+                                        title="إرسال بالبريد">
+                                    <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -490,18 +594,23 @@
                         <span class="text-sm text-gray-500 dark:text-gray-400">رقم القضية:</span>
                         <span class="text-sm text-gray-700 dark:text-gray-300">{{ $doc->case_number ?? 'بدون قضية' }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span class="text-sm text-gray-500 dark:text-gray-400">المرحلة:</span>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap {{ $this->getStageBadgeClass($doc->current_stage) }}">
                             {{ $this->getStageLabel($doc->current_stage) }}
                         </span>
+                        @if($doc->isOverdue())
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                متأخرة
+                            </span>
+                        @endif
                     </div>
                     <div class="text-sm text-gray-500 dark:text-gray-400" dir="rtl">
                         {{ $doc->created_at->diffForHumans() }}
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
                     <a href="{{ route('documents.show', $doc->id) }}"
                        class="flex items-center justify-center gap-2 px-3 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors">
                         <x-heroicon-o-eye class="w-4 h-4" />
@@ -525,6 +634,11 @@
                             <span class="text-sm">أرشفة</span>
                         </x-secondary-button>
                     @endif
+                    <x-secondary-button type="button" wire:click="openSendEmail({{ $doc->id }})"
+                                        class="flex items-center justify-center gap-2">
+                        <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                        <span class="text-sm">إرسال بالبريد</span>
+                    </x-secondary-button>
                 </div>
             </div>
         @empty
@@ -536,6 +650,46 @@
             </div>
         @endforelse
     </div>
+
+    {{-- Email Modal --}}
+    <x-modal name="sendEmailModal" wire:model="sendEmailModal" size="md">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4">إرسال المستند بالبريد</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">البريد الإلكتروني</label>
+                    <input wire:model="tempSendEmail" type="email" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                           placeholder="العميل@domain.com">
+                    @error('tempSendEmail')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">الرسالة</label>
+                    <textarea wire:model="sendMessage" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="مرفق لكم مسودة العقد للاطلاع والتعليق..."></textarea>
+                    @error('sendMessage')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button wire:click="sendDocumentEmail" 
+                            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        إرسال
+                    </button>
+                    <button wire:click="$set('sendEmailModal', false)"
+                            class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </x-modal>
 
     {{-- Pagination --}}
     <div class="mt-4">
@@ -598,6 +752,18 @@
                         const link = document.createElement('a');
                         link.href = data.url;
                         link.download = data.filename;
+                        link.style.display = 'none';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+
+                    // S3 File Download Listener (Livewire v3)
+                    Livewire.on('download-file', (data) => {
+                        const link = document.createElement('a');
+                        link.href = data.url;
+                        link.download = data.filename;
+                        link.target = '_blank';
                         link.style.display = 'none';
                         document.body.appendChild(link);
                         link.click();

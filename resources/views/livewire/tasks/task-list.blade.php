@@ -108,6 +108,68 @@
                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
                 </div>
             </div>
+
+            {{-- Advanced Filters Row --}}
+            <div class="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                {{-- Assignee Filter --}}
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        المكلف
+                    </label>
+                    <select wire:model.live="assigneeFilter" 
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                        <option value="">جميع المكلفين</option>
+                        @foreach($this->assignees as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Priority Filter --}}
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        الأولوية
+                    </label>
+                    <select wire:model.live="priorityFilter" 
+                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                        <option value="all">الكل</option>
+                        <option value="low">منخفضة</option>
+                        <option value="medium">متوسطة</option>
+                        <option value="high">عالية</option>
+                        <option value="urgent">عاجلة</option>
+                    </select>
+                </div>
+
+                {{-- Date From --}}
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        من تاريخ
+                    </label>
+                    <input type="date"
+                           wire:model.live="dateFrom"
+                           class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                </div>
+
+                {{-- Date To --}}
+                <div class="w-full sm:w-48">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        إلى تاريخ
+                    </label>
+                    <input type="date"
+                           wire:model.live="dateTo"
+                           class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-primary focus:border-primary">
+                </div>
+
+                {{-- Clear Filters --}}
+                @if($assigneeFilter || $priorityFilter !== 'all' || $dateFrom || $dateTo)
+                    <div class="flex items-end">
+                        <button wire:click="clearFilters" 
+                                class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            مسح الفلاتر
+                        </button>
+                    </div>
+                @endif
+            </div>
         </div>
 
         {{-- Results Counter --}}
@@ -185,8 +247,15 @@
                             {{-- Due Date --}}
                             <td class="px-6 py-4 text-center">
                                 @if($task->due_date)
-                                    <div class="text-sm text-gray-900 dark:text-white">
-                                        {{ $task->due_date->format('Y/m/d') }}
+                                    <div class="flex items-center justify-center gap-2">
+                                        <div class="text-sm text-gray-900 dark:text-white">
+                                            {{ $task->due_date->format('Y/m/d') }}
+                                        </div>
+                                        @if($task->is_overdue)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                متأخرة
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
                                         {{ $task->due_date->locale('ar')->diffForHumans() }}

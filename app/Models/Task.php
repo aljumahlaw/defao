@@ -68,6 +68,25 @@ class Task extends Model
     }
 
     // Scopes
+    
+    /**
+     * Scope to filter tasks visible to a specific user based on role
+     * Admin: sees all tasks
+     * Lawyer: sees own created + assigned tasks
+     * Assistant: sees only assigned tasks
+     */
+    public function scopeVisibleTo($query, $user)
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+        
+        return $query->where(function($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->orWhere('assignee_id', $user->id);
+        });
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -90,5 +109,16 @@ class Task extends Model
                 $q->where('status', '!=', 'completed')
                   ->where('due_date', '<', now());
             });
+    }
+
+    /**
+     * Check if task is overdue
+     * Used for badges in UI
+     */
+    public function getIsOverdueAttribute(): bool
+    {
+        return $this->status !== 'completed' 
+            && $this->due_date 
+            && $this->due_date < now();
     }
 }

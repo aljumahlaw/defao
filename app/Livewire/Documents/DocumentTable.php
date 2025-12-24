@@ -3,6 +3,7 @@
 namespace App\Livewire\Documents;
 
 use App\Models\Document;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
@@ -10,6 +11,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentEmail;
 
 class DocumentTable extends Component
 {
@@ -25,6 +29,7 @@ class DocumentTable extends Component
     public $dateTo = '';
     public $caseFilter = '';
     public $caseNumber = '';
+    public $assigneeFilter = '';
 
     // Bulk Actions
     public array $selected = [];
@@ -32,6 +37,20 @@ class DocumentTable extends Component
     public string $bulkActionValue = '';
     public bool $bulkLoading = false;
     public $showBulkActions = false;
+
+    // Toggle Columns
+    public bool $showTitle = true;
+    public bool $showCaseNumber = true;
+    public bool $showType = true;
+    public bool $showStage = true;
+    public bool $showCreatedAt = true;
+    public bool $showAssignee = false; // hidden by default
+
+    // Email sending state
+    public $sendEmailModal = false;
+    public $tempSendEmail = '';
+    public $sendMessage = '';
+    public $selectedDocumentId;
 
     protected $listeners = [
         'global-search-updated' => 'handleGlobalSearch',
@@ -66,7 +85,8 @@ class DocumentTable extends Component
             ->when($this->archived, fn($q) => $q->where('is_archived', true))
             ->when($this->search, fn($q) => $q->where('title', 'like', '%' . $this->search . '%'))
             ->when($this->dateFrom, fn($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
-            ->when($this->dateTo, fn($q) => $q->whereDate('created_at', '<=', $this->dateTo));
+            ->when($this->dateTo, fn($q) => $q->whereDate('created_at', '<=', $this->dateTo))
+            ->when($this->assigneeFilter, fn($q) => $q->where('assignee_id', $this->assigneeFilter));
 
         // CASE FILTER - أضف هنا بالضبط:
         if ($this->caseFilter === 'none') {
@@ -96,11 +116,41 @@ class DocumentTable extends Component
 
     public function downloadDocument($id)
     {
-        // TODO: Phase 6 - Generate signed URL from S3
-        $this->dispatch('show-toast', 
-            message: 'قريباً: تنزيل الوثيقة #' . $id,
-            type: 'info'
-        );
+        $document = Document::visibleTo(auth()->user())->findOrFail($id);
+
+        // Check if file exists
+        if (!$document->s3_path) {
+            $this->dispatch('show-toast', 
+                message: 'لا يوجد ملف مرفق لهذه الوثيقة',
+                type: 'warning'
+            );
+            return;
+        }
+
+        try {
+            // S3 Signed URL (5 minutes expiry)
+            $url = Storage::disk('s3')->temporaryUrl(
+                $document->s3_path, 
+                now()->addMinutes(5)
+            );
+
+            // Dispatch download event to frontend
+            $this->dispatch('download-file', [
+                'url' => $url,
+                'filename' => $document->file_name ?? ($document->title . '.pdf')
+            ]);
+
+            $this->dispatch('show-toast', 
+                message: 'جاري تنزيل الوثيقة...',
+                type: 'info'
+            );
+        } catch (\Exception $e) {
+            \Log::error('S3 Download Error: ' . $e->getMessage());
+            $this->dispatch('show-toast', 
+                message: 'حدث خطأ أثناء تنزيل الملف',
+                type: 'error'
+            );
+        }
     }
 
     public function uploadNewVersion($id)
@@ -121,6 +171,83 @@ class DocumentTable extends Component
             message: 'تم أرشفة الوثيقة بنجاح',
             type: 'success'
         );
+    }
+
+    public function openSendEmail($documentId)
+    {
+        $this->selectedDocumentId = $documentId;
+        $doc = Document::visibleTo(auth()->user())->find($documentId);
+        if (!$doc) {
+            $this->dispatch('show-toast', 
+                message: 'المستند غير موجود',
+                type: 'error'
+            );
+            return;
+        }
+        $this->sendEmailModal = true;
+    }
+
+    public function sendDocumentEmail()
+    {
+        // 1. SMTP Check
+        if (!config('mail.mailer')) {
+            $this->dispatch('show-toast', 
+                message: 'يرجى إعداد SMTP في ملف .env أولاً',
+                type: 'error'
+            );
+            return;
+        }
+
+        // 2. Validation
+        $this->validate([
+            'tempSendEmail' => 'required|email',
+            'sendMessage' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $document = Document::visibleTo(auth()->user())->findOrFail($this->selectedDocumentId);
+
+            // 3. File exists check (S3)
+            if (!$document->s3_path || !Storage::disk('s3')->exists($document->s3_path)) {
+                throw new \Exception('الملف غير موجود أو لم يتم رفعه بعد');
+            }
+
+            // 4. Queue/Send fix
+            if (app()->isProduction() && config('queue.default') !== 'sync') {
+                Mail::to($this->tempSendEmail)->queue(new DocumentEmail($document, $this->sendMessage));
+            } else {
+                Mail::to($this->tempSendEmail)->send(new DocumentEmail($document, $this->sendMessage));
+            }
+
+            // 5. Activity Log آمن
+            if (class_exists('Spatie\Activitylog\Models\Activity')) {
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($document)
+                    ->log("أرسل بالبريد إلى: {$this->tempSendEmail}");
+            } else {
+                \Log::info("Document #{$document->id} sent to {$this->tempSendEmail}", [
+                    'user_id' => auth()->id(),
+                ]);
+            }
+
+            $this->dispatch('show-toast', 
+                message: '✅ تم إرسال المستند بالبريد بنجاح!',
+                type: 'success'
+            );
+        } catch (\Exception $e) {
+            \Log::error("Email failed: " . $e->getMessage(), [
+                'document_id' => $this->selectedDocumentId,
+                'email' => $this->tempSendEmail,
+            ]);
+
+            $this->dispatch('show-toast', 
+                message: '❌ ' . $e->getMessage(),
+                type: 'error'
+            );
+        }
+
+        $this->reset(['sendEmailModal', 'tempSendEmail', 'sendMessage', 'selectedDocumentId']);
     }
 
     protected function getTypeBadgeClass(string $type): string
@@ -193,13 +320,47 @@ class DocumentTable extends Component
         $this->type = 'all';
         $this->dateFrom = '';
         $this->dateTo = '';
+        $this->assigneeFilter = '';
         $this->resetPage();
+    }
+
+    #[Computed]
+    public function assignees()
+    {
+        return User::where('is_active', true)
+            ->whereIn('role', [User::ROLE_LAWYER, User::ROLE_ASSISTANT, User::ROLE_ADMIN])
+            ->orderBy('name')
+            ->get()
+            ->pluck('display_name', 'id');
     }
 
     #[Computed]
     public function resultsCount()
     {
         return $this->documents->total();
+    }
+
+    #[Computed]
+    public function visibleColumns()
+    {
+        return [
+            'title' => $this->showTitle,
+            'case_number' => $this->showCaseNumber,
+            'type' => $this->showType,
+            'stage' => $this->showStage,
+            'created_at' => $this->showCreatedAt,
+            'assignee' => $this->showAssignee,
+        ];
+    }
+
+    public function resetColumns()
+    {
+        $this->showTitle = true;
+        $this->showCaseNumber = true;
+        $this->showType = true;
+        $this->showStage = true;
+        $this->showCreatedAt = true;
+        $this->showAssignee = false;
     }
 
     public function getExistingCasesProperty()

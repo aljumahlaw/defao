@@ -3,6 +3,7 @@
 namespace App\Livewire\Tasks;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
@@ -16,6 +17,8 @@ class TaskList extends Component
     public $search = '';
     public $dateFrom = '';
     public $dateTo = '';
+    public $assigneeFilter = '';
+    public $priorityFilter = 'all';
     
     public ?int $selectedTaskId = null;
     public bool $showTaskModal = false;
@@ -31,6 +34,7 @@ class TaskList extends Component
     public function tasks()
     {
         return Task::query()
+            ->visibleTo(auth()->user()) // ✅ Role-aware filtering
             ->with('document', 'creator', 'assignee')
             ->when($this->statusFilter !== 'all', fn($q) => $q->where('status', $this->statusFilter))
             ->when($this->search, function ($q) {
@@ -42,8 +46,20 @@ class TaskList extends Component
             })
             ->when($this->dateFrom, fn($q) => $q->whereDate('due_date', '>=', $this->dateFrom))
             ->when($this->dateTo, fn($q) => $q->whereDate('due_date', '<=', $this->dateTo))
+            ->when($this->assigneeFilter, fn($q) => $q->where('assignee_id', $this->assigneeFilter))
+            ->when($this->priorityFilter !== 'all', fn($q) => $q->where('priority', $this->priorityFilter))
             ->latest()
             ->paginate(20);
+    }
+
+    #[Computed]
+    public function assignees()
+    {
+        return User::where('is_active', true)
+            ->whereIn('role', [User::ROLE_LAWYER, User::ROLE_ASSISTANT, User::ROLE_ADMIN])
+            ->orderBy('name')
+            ->get()
+            ->pluck('display_name', 'id');
     }
 
     #[Computed]
@@ -202,6 +218,8 @@ class TaskList extends Component
         $this->statusFilter = 'all';
         $this->dateFrom = '';
         $this->dateTo = '';
+        $this->assigneeFilter = '';
+        $this->priorityFilter = 'all';
         $this->resetPage();
     }
 
