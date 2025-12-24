@@ -5,15 +5,12 @@ namespace App\Livewire\Profile;
 use App\Models\NotificationSetting;
 use App\Models\User;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
 class Settings extends Component
 {
-    use WithFileUploads;
-
     // Profile info
     public $name = '';
     public $first_name = '';
@@ -23,9 +20,6 @@ class Settings extends Component
     public $phone = '';
     public $phoneDigits = ''; // 8 أرقام فقط (بعد 05)
     public $email = '';
-    public $avatar = null;
-    public $avatarPreview = null;
-    public $currentAvatar = null; // الصورة الحالية من DB
 
     // Password change
     public $currentPassword = '';
@@ -42,6 +36,24 @@ class Settings extends Component
     // Role/Status
     public $isActive = true;
 
+    // Validation Rules
+    protected $rules = [
+        'first_name' => 'required|string|max:50',
+        'middle_name' => 'nullable|string|max:50',
+        'last_name' => 'nullable|string|max:50',
+        'title' => 'nullable|in:المحامي,المحامية,مساعد قانوني,مساعدة قانونية,المدير',
+        'phoneDigits' => 'nullable|string|size:8|regex:/^[0-9]+$/',
+        'email' => 'required|email|max:255|unique:users,email',
+    ];
+
+    protected $messages = [
+        'phoneDigits.size' => 'رقم الجوال يجب أن يكون 8 أرقام',
+        'phoneDigits.regex' => 'رقم الجوال يجب أن يحتوي على أرقام فقط',
+        'first_name.required' => 'الاسم الأول مطلوب',
+        'email.required' => 'البريد الإلكتروني مطلوب',
+        'email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
+    ];
+
     public function mount()
     {
         $user = auth()->user()->load('notificationSetting');
@@ -49,8 +61,6 @@ class Settings extends Component
         $this->title = $user->title ?? '';
         $this->phone = $user->phone ?? '';
         $this->email = $user->email;
-        $this->currentAvatar = $user->avatar ? Storage::url($user->avatar) : null;
-        $this->avatarPreview = null; // preview للصورة الجديدة فقط
         $this->isActive = $user->is_active;
 
         // Phone: استخراج 8 أرقام بعد 05
@@ -93,52 +103,14 @@ class Settings extends Component
         );
     }
 
-    public function updatedAvatar()
-    {
-        $this->validate(['avatar' => 'nullable|image|max:2048']);
-        
-        if ($this->avatar) {
-            $this->avatarPreview = $this->avatar->temporaryUrl();
-        }
-    }
-
-    public function removeAvatar()
-    {
-        $user = auth()->user();
-        
-        // Delete from storage if exists
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
-        }
-        
-        // Clear DB
-        $user->update(['avatar' => null]);
-        
-        // Reset properties
-        $this->avatar = null;
-        $this->avatarPreview = null;
-        $this->currentAvatar = null;
-        
-        $this->dispatch('show-toast', 
-            message: 'تم حذف الصورة بنجاح',
-            type: 'success'
-        );
-    }
-
     public function updateProfile()
     {
-        $this->validate([
-            'first_name' => 'required|string|max:50',
-            'middle_name' => 'nullable|string|max:50',
-            'last_name' => 'nullable|string|max:50',
-            'title' => 'nullable|in:المحامي,المحامية,مساعد قانوني,مساعدة قانونية,المدير',
-            'phoneDigits' => 'nullable|string|size:8|regex:/^[0-9]+$/',
-            'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
-            'avatar' => 'nullable|image|max:2048',
-        ], [
-            'phoneDigits.size' => 'رقم الجوال يجب أن يكون 8 أرقام',
-            'phoneDigits.regex' => 'رقم الجوال يجب أن يحتوي على أرقام فقط',
-        ]);
+        $user = Auth::user();
+        
+        // Update email rule to exclude current user
+        $this->rules['email'] = 'required|email|max:255|unique:users,email,' . $user->id;
+        
+        $this->validate();
 
         // جمع 05 + 8 أرقام
         if ($this->phoneDigits && strlen($this->phoneDigits) === 8) {
@@ -146,23 +118,14 @@ class Settings extends Component
         } else {
             $this->phone = null;
         }
-
-        $user = auth()->user();
-        $avatarPath = $user->avatar; // الحالي
         
-        // Handle avatar upload FIRST
-        if ($this->avatar) {
-            // Delete old avatar if exists
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            
-            // Store new avatar
-            $avatarPath = $this->avatar->store('avatars', 'public');
+        // منع التكرار الذكي v1.0 - الكود الأصلي المثالي
+        $firstNameCount = User::where('name', $this->first_name)->count();
+        if ($firstNameCount > 0 && $this->middle_name) {
+            $fullName = trim("{$this->first_name} {$this->middle_name}");
+        } else {
+            $fullName = trim($this->first_name ?: $this->name);
         }
-        
-        // تجميع الاسم الكامل
-        $fullName = trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
         
         // Update all fields at once using update()
         $user->update([
@@ -170,15 +133,9 @@ class Settings extends Component
             'title' => $this->title ?: null,
             'phone' => $this->phone ?: null,
             'email' => $this->email,
-            'avatar' => $avatarPath, // ← المفتاح!
         ]);
         
         $this->name = $fullName; // sync the old property
-        
-        // Update avatar properties after save
-        $this->currentAvatar = $avatarPath ? Storage::url($avatarPath) : null;
-        $this->avatarPreview = null; // reset preview
-        $this->avatar = null; // reset uploaded file
 
         $this->dispatch('show-toast', 
             message: 'تم تحديث الملف الشخصي بنجاح',

@@ -16,10 +16,12 @@ class EnsureUserIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->isActive()) {
+        if (Auth::check() && Auth::user()->is_active == false) {
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
             return redirect()->route('login')
-                ->with('error', 'تم تعطيل حسابك. تواصل مع الإدارة.');
+                ->with('error', 'تم تعطيل حسابك، تواصل مع الإدارة');
         }
 
         return $next($request);

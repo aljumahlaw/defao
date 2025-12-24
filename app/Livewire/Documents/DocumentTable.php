@@ -12,6 +12,8 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentEmail;
 
 class DocumentTable extends Component
 {
@@ -43,6 +45,12 @@ class DocumentTable extends Component
     public bool $showStage = true;
     public bool $showCreatedAt = true;
     public bool $showAssignee = false; // hidden by default
+
+    // Email sending state
+    public $sendEmailModal = false;
+    public $tempSendEmail = '';
+    public $sendMessage = '';
+    public $selectedDocumentId;
 
     protected $listeners = [
         'global-search-updated' => 'handleGlobalSearch',
@@ -163,6 +171,83 @@ class DocumentTable extends Component
             message: 'تم أرشفة الوثيقة بنجاح',
             type: 'success'
         );
+    }
+
+    public function openSendEmail($documentId)
+    {
+        $this->selectedDocumentId = $documentId;
+        $doc = Document::visibleTo(auth()->user())->find($documentId);
+        if (!$doc) {
+            $this->dispatch('show-toast', 
+                message: 'المستند غير موجود',
+                type: 'error'
+            );
+            return;
+        }
+        $this->sendEmailModal = true;
+    }
+
+    public function sendDocumentEmail()
+    {
+        // 1. SMTP Check
+        if (!config('mail.mailer')) {
+            $this->dispatch('show-toast', 
+                message: 'يرجى إعداد SMTP في ملف .env أولاً',
+                type: 'error'
+            );
+            return;
+        }
+
+        // 2. Validation
+        $this->validate([
+            'tempSendEmail' => 'required|email',
+            'sendMessage' => 'required|string|max:1000',
+        ]);
+
+        try {
+            $document = Document::visibleTo(auth()->user())->findOrFail($this->selectedDocumentId);
+
+            // 3. File exists check (S3)
+            if (!$document->s3_path || !Storage::disk('s3')->exists($document->s3_path)) {
+                throw new \Exception('الملف غير موجود أو لم يتم رفعه بعد');
+            }
+
+            // 4. Queue/Send fix
+            if (app()->isProduction() && config('queue.default') !== 'sync') {
+                Mail::to($this->tempSendEmail)->queue(new DocumentEmail($document, $this->sendMessage));
+            } else {
+                Mail::to($this->tempSendEmail)->send(new DocumentEmail($document, $this->sendMessage));
+            }
+
+            // 5. Activity Log آمن
+            if (class_exists('Spatie\Activitylog\Models\Activity')) {
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($document)
+                    ->log("أرسل بالبريد إلى: {$this->tempSendEmail}");
+            } else {
+                \Log::info("Document #{$document->id} sent to {$this->tempSendEmail}", [
+                    'user_id' => auth()->id(),
+                ]);
+            }
+
+            $this->dispatch('show-toast', 
+                message: '✅ تم إرسال المستند بالبريد بنجاح!',
+                type: 'success'
+            );
+        } catch (\Exception $e) {
+            \Log::error("Email failed: " . $e->getMessage(), [
+                'document_id' => $this->selectedDocumentId,
+                'email' => $this->tempSendEmail,
+            ]);
+
+            $this->dispatch('show-toast', 
+                message: '❌ ' . $e->getMessage(),
+                type: 'error'
+            );
+        }
+
+        $this->reset(['sendEmailModal', 'tempSendEmail', 'sendMessage', 'selectedDocumentId']);
     }
 
     protected function getTypeBadgeClass(string $type): string

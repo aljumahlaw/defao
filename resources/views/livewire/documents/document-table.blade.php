@@ -532,6 +532,12 @@
                                         <x-heroicon-o-archive-box class="w-4 h-4" />
                                     </button>
                                 @endif
+                                <button type="button"
+                                        wire:click="openSendEmail({{ $doc->id }})"
+                                        class="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors"
+                                        title="إرسال بالبريد">
+                                    <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -628,6 +634,11 @@
                             <span class="text-sm">أرشفة</span>
                         </x-secondary-button>
                     @endif
+                    <x-secondary-button type="button" wire:click="openSendEmail({{ $doc->id }})"
+                                        class="flex items-center justify-center gap-2">
+                        <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                        <span class="text-sm">إرسال بالبريد</span>
+                    </x-secondary-button>
                 </div>
             </div>
         @empty
@@ -639,6 +650,46 @@
             </div>
         @endforelse
     </div>
+
+    {{-- Email Modal --}}
+    <x-modal name="sendEmailModal" wire:model="sendEmailModal" size="md">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4">إرسال المستند بالبريد</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">البريد الإلكتروني</label>
+                    <input wire:model="tempSendEmail" type="email" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                           placeholder="العميل@domain.com">
+                    @error('tempSendEmail')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">الرسالة</label>
+                    <textarea wire:model="sendMessage" rows="4"
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                              placeholder="مرفق لكم مسودة العقد للاطلاع والتعليق..."></textarea>
+                    @error('sendMessage')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button wire:click="sendDocumentEmail" 
+                            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                        إرسال
+                    </button>
+                    <button wire:click="$set('sendEmailModal', false)"
+                            class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </x-modal>
 
     {{-- Pagination --}}
     <div class="mt-4">

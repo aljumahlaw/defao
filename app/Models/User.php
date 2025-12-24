@@ -28,18 +28,12 @@ class User extends Authenticatable
     public const TITLE_ASSISTANT_FEMALE = 'مساعدة قانونية';
     public const TITLE_ADMIN = 'المدير';
 
-    protected $fillable = [
-        'name',
-        'title',
-        'email',
-        'password',
-        'avatar',
-        'phone',
-        'department',
-        'position',
-        'role',
-        'is_active',
-    ];
+    /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $guarded = ['id', 'role', 'is_active', 'password_changed_at'];
 
     /**
      * The attributes that should be hidden for serialization.
