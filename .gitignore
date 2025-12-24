@@ -33,3 +33,5 @@ Thumbs.db
 
 # Archive (documentation only - keep in repo for reference)
 # Archive/
+/storage/framework/
+/bootstrap/cache/
