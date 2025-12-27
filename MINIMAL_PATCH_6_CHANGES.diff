@@ -1,0 +1,85 @@
+diff --git a/app/Livewire/Documents/DocumentTable.php b/app/Livewire/Documents/DocumentTable.php
+index xxxxxx..xxxxxx 100644
+--- a/app/Livewire/Documents/DocumentTable.php
++++ b/app/Livewire/Documents/DocumentTable.php
+@@ -468,8 +468,22 @@ class DocumentTable extends Component
+                 'stage:finalapproval' => $count = $documentsQuery->update(['current_stage' => 'finalapproval']),
+             };
+         } catch (\Exception $e) {
+-            $errors = 1;
+-            $count = 0;
++            \Log::error('Bulk action failed', [
++                'action' => $this->bulkActionValue,
++                'selected' => $this->selected,
++                'user_id' => auth()->id(),
++                'error' => $e->getMessage(),
++                'trace' => $e->getTraceAsString(),
++            ]);
++            
++            $this->bulkActionValue = '';
++            $this->bulkLoading = false;
++            
++            $this->dispatch('show-toast',
++                message: 'فشلت العملية: ' . $e->getMessage(),
++                type: 'error'
++            );
++            return;
+         }
+ 
+         $this->bulkActionValue = '';
+@@ -569,7 +583,8 @@ class DocumentTable extends Component
+         // ✅ P1-8: Policy check مع chunking للأداء
+         $selectedIds = $this->selected;
+         $deletableIds = [];
+ 
+-        Document::whereIn('id', $selectedIds)
++        Document::visibleTo(auth()->user())
++            ->whereIn('id', $selectedIds)
+             ->chunk(500, function ($documents) use (&$deletableIds) {
+                 foreach ($documents as $document) {
+                     if (auth()->user()->can('delete', $document)) {
+@@ -586,8 +601,10 @@ class DocumentTable extends Component
+         }
+         
+         $count = count($deletableIds);
+-        Document::whereIn('id', $deletableIds)->delete();
++        Document::visibleTo(auth()->user())
++            ->whereIn('id', $deletableIds)
++            ->delete();
+         $this->selected = [];
+         $this->showBulkActions = false;
++        $this->resetPage();
+         $this->dispatch('show-toast', message: "تم حذف {$count} مستند بنجاح", type: 'success');
+     }
+ 
+@@ -702,6 +719,8 @@ class DocumentTable extends Component
+         }
+ 
+         $document->delete();
++
++        $this->resetPage();
+ 
+         $this->dispatch('show-toast', 
+             message: 'تم حذف الوثيقة بنجاح', 
+diff --git a/resources/views/livewire/documents/document-table.blade.php b/resources/views/livewire/documents/document-table.blade.php
+index xxxxxx..xxxxxx 100644
+--- a/resources/views/livewire/documents/document-table.blade.php
++++ b/resources/views/livewire/documents/document-table.blade.php
+@@ -455,7 +455,7 @@
+             <tbody class="divide-y divide-gray-200 dark:divide-gray-700" wire:loading.remove wire:target="search,type,stage,dateFrom,dateTo,archived">
+                 @forelse($this->documents as $doc)
+-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50" @class(['bg-primary/5 dark:bg-primary/10' => in_array($doc->id, $this->selected)])>
++                    <tr wire:key="document-{{ $doc->id }}" class="hover:bg-gray-50 dark:hover:bg-gray-700/50" @class(['bg-primary/5 dark:bg-primary/10' => in_array($doc->id, $this->selected)])>
+                         <td class="px-6 py-4">
+                             <input type="checkbox" 
+@@ -576,7 +576,7 @@
+     {{-- Mobile Cards --}}
+     <div class="md:hidden space-y-4">
+         @forelse($this->documents as $doc)
+-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" @class(['ring-2 ring-primary' => in_array($doc->id, $this->selected)])>
++            <div wire:key="document-mobile-{{ $doc->id }}" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" @class(['ring-2 ring-primary' => in_array($doc->id, $this->selected)])>
+                 <div class="flex items-start gap-2 mb-3">
+                     <input type="checkbox" 
+                     
+
+

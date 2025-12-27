@@ -41,8 +41,7 @@ class DocumentPolicy
 
     public function delete(User $user, Document $document): bool
     {
-        if ($user->isAssistant()) return false;
-        return $user->isAdmin() || $document->user_id === $user->id;
+        return $user->role === 'admin';
     }
 
     public function forceDelete(User $user, Document $document): bool

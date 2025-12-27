@@ -105,6 +105,29 @@ class UserManagement extends Component
         session()->flash('success', $status . ' المستخدم بنجاح.');
     }
 
+    public function deleteUser($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        // Prevent self-deletion
+        if ($user->id === auth()->id()) {
+            session()->flash('error', 'لا يمكنك حذف حسابك الخاص.');
+            return;
+        }
+        
+        // Check for active documents/tasks
+        $activeDocuments = $user->documents()->where('is_archived', false)->count();
+        $activeTasks = $user->tasks()->where('status', '!=', 'completed')->count();
+        
+        if ($activeDocuments > 0 || $activeTasks > 0) {
+            session()->flash('error', 'لا يمكن حذف المستخدم لأنه لديه مستندات أو مهام نشطة. يرجى أرشفة أو إكمال المهام أولاً.');
+            return;
+        }
+        
+        $user->delete();
+        session()->flash('success', 'تم حذف المستخدم بنجاح.');
+    }
+
     public function render()
     {
         $users = User::query()
@@ -120,6 +143,6 @@ class UserManagement extends Component
 
         return view('livewire.admin.user-management', [
             'users' => $users,
-        ]);
+        ])->layout('layouts.app');
     }
 }

@@ -9,7 +9,7 @@
 - PHP 8.3+
 - Composer
 - Node.js & NPM
-- SQLite (أو MySQL/PostgreSQL)
+- MySQL 8.0+ (الافتراضي والمُوصى به) أو PostgreSQL/SQLite (اختياري)
 
 ## التشغيل المحلي
 
@@ -29,10 +29,21 @@ php artisan key:generate
 
 ### 3. قاعدة البيانات
 
-```bash
-php artisan migrate
-php artisan db:seed
-```
+1. قم بإنشاء قاعدة بيانات MySQL
+2. قم بتكوين قاعدة البيانات في `.env`:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=اسم_قاعدة_البيانات
+   DB_USERNAME=اسم_المستخدم
+   DB_PASSWORD=كلمة_المرور
+   ```
+3. قم بتشغيل migrations و seeders:
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
 ### 4. البناء والتشغيل
 
