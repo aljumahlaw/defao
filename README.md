@@ -91,7 +91,7 @@ Defao is a modern, production-ready document and task management system designed
 ### Backend
 - **Laravel**: 11.47 (PHP 8.2+)
 - **Livewire**: 3.4 (Server-side components)
-- **PostgreSQL**: 18 (Database)
+- **MySQL**: 8.0+ (Database - default and recommended)
 - **Redis**: Cache, Queue, and Session storage
 - **Spatie Permission**: Role and permission management
 
@@ -113,7 +113,7 @@ Defao is a modern, production-ready document and task management system designed
 - **PHP**: 8.2 or higher
 - **Composer**: Latest version
 - **Node.js**: 18+ and npm
-- **PostgreSQL**: 14+ (production) or SQLite (development)
+- **MySQL**: 8.0+ (default and recommended; PostgreSQL and SQLite are also supported if configured)
 - **Redis**: For caching and queues (optional for development)
 
 ---
@@ -148,22 +148,27 @@ php artisan key:generate
 
 ### 5. Database Setup
 
-Configure your database in `.env`:
+The application uses MySQL by default. Configure your database in `.env`:
 
 ```env
-DB_CONNECTION=pgsql
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=defao
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_PORT=3306
+DB_DATABASE=CHANGE_ME_DB_NAME
+DB_USERNAME=CHANGE_ME_DB_USER
+DB_PASSWORD=CHANGE_ME_DB_PASSWORD
 ```
 
-Then run migrations and seeders:
+**Steps:**
+1. Create a MySQL database
+2. Update the `.env` file with your database credentials (replace `CHANGE_ME_*` placeholders)
+3. Run migrations and seeders:
 
 ```bash
 php artisan migrate --seed
 ```
+
+**Note:** The application also supports PostgreSQL and SQLite if configured, but MySQL is the default and recommended option.
 
 ### 6. Storage Link
 
@@ -222,10 +227,18 @@ For detailed login and user creation instructions, see `Archive/HOW_TO_LOGIN.md`
 
 ### Database
 
-The application supports multiple database drivers:
+The application uses MySQL by default, but supports multiple database drivers:
 
-- **Production**: PostgreSQL (recommended)
-- **Development**: SQLite (for quick setup)
+- **Default & Recommended**: MySQL 8.0+
+- **Optional**: PostgreSQL and SQLite (configurable in `.env`)
+
+**Required environment variables for MySQL:**
+- `DB_CONNECTION=mysql`
+- `DB_HOST` (default: 127.0.0.1)
+- `DB_PORT` (default: 3306)
+- `DB_DATABASE` (your database name)
+- `DB_USERNAME` (your database username)
+- `DB_PASSWORD` (your database password)
 
 ### Storage
 

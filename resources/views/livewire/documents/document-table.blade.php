@@ -61,11 +61,11 @@
                 <div class="relative">
                     @php($isDisabled = (count($this->selected) === 0))
                     @if($isDisabled)
-                        <x-secondary-button disabled class="flex items-center gap-2 px-3 py-2 text-sm" wire:click="$set('showBulkActions', true)">
+                        <x-secondary-button disabled class="flex items-center gap-2 px-3 py-2 text-sm" wire:click="$toggle('showBulkActions')">
                             📋 إجراءات جماعية ({{ count($this->selected) }})
                         </x-secondary-button>
                     @else
-                        <x-secondary-button class="flex items-center gap-2 px-3 py-2 text-sm" wire:click="$set('showBulkActions', true)">
+                        <x-secondary-button class="flex items-center gap-2 px-3 py-2 text-sm" wire:click="$toggle('showBulkActions')">
                             📋 إجراءات جماعية ({{ count($this->selected) }})
                         </x-secondary-button>
                     @endif
@@ -454,7 +454,7 @@
             </tbody>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700" wire:loading.remove wire:target="search,type,stage,dateFrom,dateTo,archived">
                 @forelse($this->documents as $doc)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50" @class(['bg-primary/5 dark:bg-primary/10' => in_array($doc->id, $this->selected)])>
+                    <tr wire:key="document-{{ $doc->id }}" class="hover:bg-gray-50 dark:hover:bg-gray-700/50" @class(['bg-primary/5 dark:bg-primary/10' => in_array($doc->id, $this->selected)])>
                         <td class="px-6 py-4">
                             <input type="checkbox" 
                                    wire:model="selected"
@@ -532,6 +532,9 @@
                                         <x-heroicon-o-archive-box class="w-4 h-4" />
                                     </button>
                                 @endif
+                                <button type="button" wire:click="deleteDocument({{ $doc->id }})" wire:confirm="هل أنت متأكد من حذف هذه الوثيقة؟" class="text-red-600 hover:text-red-800 p-1 rounded transition-colors" title="حذف الوثيقة">
+                                    <x-heroicon-o-trash class="w-4 h-4" />
+                                </button>
                                 <button type="button"
                                         wire:click="openSendEmail({{ $doc->id }})"
                                         class="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors"
@@ -572,7 +575,7 @@
     {{-- Mobile Cards --}}
     <div class="md:hidden space-y-4">
         @forelse($this->documents as $doc)
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" @class(['ring-2 ring-primary' => in_array($doc->id, $this->selected)])>
+            <div wire:key="document-mobile-{{ $doc->id }}" class="bg-white dark:bg-gray-800 rounded-lg shadow p-4" @class(['ring-2 ring-primary' => in_array($doc->id, $this->selected)])>
                 <div class="flex items-start gap-2 mb-3">
                     <input type="checkbox" 
                            wire:model="selected"
@@ -634,6 +637,11 @@
                             <span class="text-sm">أرشفة</span>
                         </x-secondary-button>
                     @endif
+                    <x-secondary-button type="button" wire:click="deleteDocument({{ $doc->id }})" wire:confirm="هل أنت متأكد من حذف هذه الوثيقة؟" 
+                                        class="flex items-center justify-center gap-2 border-red-200 text-red-600 hover:bg-red-50">
+                        <x-heroicon-o-trash class="w-4 h-4" />
+                        <span class="text-sm">حذف</span>
+                    </x-secondary-button>
                     <x-secondary-button type="button" wire:click="openSendEmail({{ $doc->id }})"
                                         class="flex items-center justify-center gap-2">
                         <x-heroicon-o-paper-airplane class="w-4 h-4" />

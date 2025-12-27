@@ -284,6 +284,7 @@
                                         <x-heroicon-o-pencil class="w-5 h-5" />
                                     </button>
                                     <button wire:click="deleteTask({{ $task->id }})"
+                                            wire:confirm="هل أنت متأكد من حذف هذه المهمة؟"
                                             class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                             title="حذف">
                                         <x-heroicon-o-trash class="w-5 h-5" />

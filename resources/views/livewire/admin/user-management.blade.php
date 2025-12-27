@@ -163,16 +163,29 @@
                                 @if($user->id === auth()->id())
                                     <span class="text-gray-400 dark:text-gray-500">حسابك</span>
                                 @else
-                                    <button 
-                                        wire:click="toggleActive({{ $user->id }})"
-                                        wire:loading.attr="disabled"
-                                        wire:loading.class="opacity-50"
-                                        class="px-3 py-1 text-xs rounded-lg transition-colors {{ $user->is_active ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200' }}">
-                                        <span wire:loading.remove wire:target="toggleActive({{ $user->id }})">
-                                            {{ $user->is_active ? 'تعطيل' : 'تفعيل' }}
-                                        </span>
-                                        <span wire:loading wire:target="toggleActive({{ $user->id }})">...</span>
-                                    </button>
+                                    <div class="flex items-center gap-2">
+                                        <button 
+                                            wire:click="toggleActive({{ $user->id }})"
+                                            wire:confirm="{{ $user->is_active ? 'هل أنت متأكد من تعطيل؟' : 'هل أنت متأكد من تفعيل؟' }}"
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-50"
+                                            class="px-3 py-1 text-xs rounded-lg transition-colors {{ $user->is_active ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200' }}">
+                                            <span wire:loading.remove wire:target="toggleActive({{ $user->id }})">
+                                                {{ $user->is_active ? 'تعطيل' : 'تفعيل' }}
+                                            </span>
+                                            <span wire:loading wire:target="toggleActive({{ $user->id }})">...</span>
+                                        </button>
+                                        
+                                        <button 
+                                            wire:click="deleteUser({{ $user->id }})"
+                                            wire:confirm="هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف جميع بياناته نهائياً."
+                                            wire:loading.attr="disabled"
+                                            wire:loading.class="opacity-50"
+                                            class="px-3 py-1 text-xs rounded-lg bg-red-100 text-red-800 hover:bg-red-200 transition-colors">
+                                            <span wire:loading.remove wire:target="deleteUser({{ $user->id }})">حذف</span>
+                                            <span wire:loading wire:target="deleteUser({{ $user->id }})">...</span>
+                                        </button>
+                                    </div>
                                 @endif
                             </td>
                         </tr>

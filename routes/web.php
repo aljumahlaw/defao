@@ -9,7 +9,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified', 'user.active', 'force-password'])->group(function () {
+Route::middleware(['auth', 'verified', 'user.active'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
@@ -52,9 +52,9 @@ Route::middleware(['auth', 'verified', 'user.active', 'force-password'])->group(
         return view('profile');
     })->name('profile.settings');
     
-    Route::get('/admin/users', function () {
-        return view('admin.users');
-    })->middleware('admin')->name('admin.users');
+    Route::get('/admin/users', \App\Livewire\Admin\UserManagement::class)
+    ->middleware('admin')
+    ->name('admin.users');
 });
 
 Route::middleware(['auth', 'throttle:10,1'])->get('/download-pdf/{key}', function (string $key) {

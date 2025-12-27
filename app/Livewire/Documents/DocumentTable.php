@@ -399,9 +399,12 @@ class DocumentTable extends Component
     public function selectAll()
     {
         $this->selected = $this->documents->pluck('id')->toArray();
-        $this->dispatch('show-toast')
-            ->message('تم تحديد جميع المستندات (' . count($this->selected) . ')')
-            ->type('info');
+        
+        // ✅ Livewire v3 Syntax - Named parameters
+        $this->dispatch('show-toast', 
+            message: 'تم تحديد جميع المستندات (' . count($this->selected) . ')', 
+            type: 'info'
+        );
     }
 
     public function clearSelection()
@@ -410,11 +413,29 @@ class DocumentTable extends Component
         $this->bulkAction = '';
         $this->bulkActionValue = '';
         $this->caseNumber = '';
+        
+        // ✅ Livewire v3 Syntax
+        $this->dispatch('show-toast', 
+            message: 'تم مسح التحديد', 
+            type: 'info'
+        );
     }
 
     public function bulkAction()
     {
         $this->bulkLoading = true;
+
+        // ✅ فحص مبكر: الحذف الجماعي محجوز فقط للـ admin
+        if ($this->bulkActionValue === 'delete' && auth()->user()->role !== 'admin') {
+            $this->bulkLoading = false;
+
+            $this->dispatch('show-toast',
+                message: 'غير مصرح لك بحذف الوثائق. الحذف متاح للمدير فقط.',
+                type: 'error'
+            );
+
+            return;
+        }
 
         if (empty($this->selected)) {
             $this->bulkLoading = false;
@@ -445,8 +466,22 @@ class DocumentTable extends Component
                 'stage:finalapproval' => $count = $documentsQuery->update(['current_stage' => 'finalapproval']),
             };
         } catch (\Exception $e) {
-            $errors = 1;
-            $count = 0;
+            \Log::error('Bulk action failed', [
+                'action' => $this->bulkActionValue,
+                'selected' => $this->selected,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            $this->bulkActionValue = '';
+            $this->bulkLoading = false;
+            
+            $this->dispatch('show-toast',
+                message: 'فشلت العملية: ' . $e->getMessage(),
+                type: 'error'
+            );
+            return;
         }
 
         $this->bulkActionValue = '';
@@ -531,11 +566,22 @@ class DocumentTable extends Component
 
     public function bulkDelete()
     {
+        // ✅ فحص مبكر: الحذف الجماعي محجوز فقط للـ admin
+        if (auth()->user()->role !== 'admin') {
+            $this->dispatch('show-toast',
+                message: 'غير مصرح لك بحذف الوثائق. الحذف متاح للمدير فقط.',
+                type: 'error'
+            );
+
+            return;
+        }
+
         // ✅ P1-8: Policy check مع chunking للأداء
         $selectedIds = $this->selected;
         $deletableIds = [];
 
-        Document::whereIn('id', $selectedIds)
+        Document::visibleTo(auth()->user())
+            ->whereIn('id', $selectedIds)
             ->chunk(500, function ($documents) use (&$deletableIds) {
                 foreach ($documents as $document) {
                     if (auth()->user()->can('delete', $document)) {
@@ -553,9 +599,12 @@ class DocumentTable extends Component
         }
         
         $count = count($deletableIds);
-        Document::whereIn('id', $deletableIds)->delete();
+        Document::visibleTo(auth()->user())
+            ->whereIn('id', $deletableIds)
+            ->delete();
         $this->selected = [];
         $this->showBulkActions = false;
+        $this->resetPage();
         $this->dispatch('show-toast', message: "تم حذف {$count} مستند بنجاح", type: 'success');
     }
 
@@ -580,9 +629,10 @@ class DocumentTable extends Component
             'filename' => $filename
         ], now()->addMinutes(5));
 
-        $this->dispatch('show-toast')
-            ->message("جاري تصدير {$count} مستند...")
-            ->type('info');
+        $this->dispatch('show-toast', 
+            message: "جاري تصدير {$count} مستند...", 
+            type: 'info'
+        );
 
         $this->dispatch('download-pdf', [
             'url' => route('documents.download-pdf', ['key' => $cacheKey]),
@@ -615,10 +665,10 @@ class DocumentTable extends Component
             Document::whereIn('id', $selectedIds)
                 ->update(['case_number' => $caseNumber]);
 
-            $this->dispatch('show-toast', [
-                'message' => "تم ربط " . count($selectedIds) . " مستندات بقضية: " . ($caseNumber ?? 'بدون'),
-                'type' => 'success'
-            ]);
+            $this->dispatch('show-toast',
+    message: "تم ربط " . count($selectedIds) . " مستندات بقضية: " . ($caseNumber ?? 'بدون'),
+    type: 'success'
+);
             
             $cacheKey = "document_case_numbers:documents:" . auth()->id();
             Cache::forget($cacheKey);
@@ -633,6 +683,30 @@ class DocumentTable extends Component
         $this->showBulkActions = false;
         $this->caseNumber = '';
         $this->resetPage();
+    }
+
+    public function deleteDocument($id)
+    {
+        $document = Document::visibleTo(auth()->user())->findOrFail($id);
+
+        try {
+            $this->authorize('delete', $document);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            $this->dispatch('show-toast', 
+                message: 'غير مصرح لك بحذف الوثائق. الحذف متاح للمدير فقط.',
+                type: 'error'
+            );
+            return;
+        }
+
+        $document->delete();
+
+        $this->resetPage();
+
+        $this->dispatch('show-toast', 
+            message: 'تم حذف الوثيقة بنجاح', 
+            type: 'success'
+        );
     }
 
     public function render()
